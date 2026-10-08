@@ -1,4 +1,5 @@
 pytest
 setuptools
 wheel
-# TODO: update the necessary requirements to develop this package
+# python -m pip install -r dev-requirements.txt
+# python3 -m pip install sqlalchemy 
