@@ -1,27 +1,46 @@
 from ..Models.ProductsModel import ProductsModel
+from ..Models.ProductsDiscountInventoryModel import ProductsDiscountInventoryModel
 from ..Models.FrontEndReponseModel import PageDataReponseModel
-from ..DBConnects import ProductsDB
+from ..DBConnects.ProductsDB import ProductsDB
+from ..DBConnects.ProductsDiscountDB import ProductsDiscountDB
+from ..DBConnects.ProductsInventoryDB import ProductsInventoryDB
 
-productDB = ProductsDB()
+productsDB = ProductsDB()
+productsDiscountDB = ProductsDiscountDB()
+productsInventoryDB = ProductsInventoryDB()
 
 class ProductsService:
 
     # create a new product
     def createProduct(self, productModel: ProductsModel) -> ProductsModel:
         # 
-        newProduct = productDB.create_product(productModel)
+        newProduct = productsDB.create_product(productModel)
         return ProductsModel.model_validate(newProduct)
 
     #get a product by its ID
     def getProductById(self, productID: int) -> ProductsModel:
-        product = productDB.getProductById(productID)
+        product = productsDB.getProductById(productID)
         return product
 
     # list all products with pagination
     def listProducts(self, product: ProductsModel) -> PageDataReponseModel:
-        products = productDB.listProducts(product)
-        #TODO get product inventory and product discount from data base and add to products list
-        #TODO 1. get product inventory from database and add to products list
-        #TODO 2. get product discount from database and add to products list
-        #TODO 3. return products list with inventory and discount
-        return PageDataReponseModel(data=products)
+        productsPageList = productsDB.listProducts(product)
+        if not productsPageList.items:
+            return productsPageList
+        #get products IDs
+        productsIDs = ProductsModel.getProductsIDList(productsPageList)
+        #get product inventory from data base 
+        productsInventoryPageList = productsInventoryDB.listProductsInventoryByIDs(productsIDs)
+        #get product discount from data base 
+        productsDiscountPageList = productsDiscountDB.listProductsDiscountByProductsIDs(productsIDs)
+        for productsDiscountInventory in productsPageList.items:
+            #add productsInventory to productsDiscountInventory list
+            for productsInventory in productsInventoryPageList.items:
+                if productsDiscountInventory.id == productsInventory.product_id:
+                    productsDiscountInventory = productsDiscountInventory.copyProductsInventoryToThisModel(productsInventory, productsDiscountInventory)
+            #add productsDiscount to productsDiscountInventory list
+            for productsDiscount in productsDiscountPageList.items:
+                if productsDiscountInventory.id == productsDiscount.product_id:
+                    productsDiscountInventory = productsDiscountInventory.copyProductsDiscountToThisModel(productsDiscount, productsDiscountInventory)
+
+        return productsPageList

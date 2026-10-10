@@ -29,3 +29,4 @@ async def permissionCheck(request: Request, call_next):
         #check userSessionID, if not redirect to the login page
         if not isAuthenticated:
             return RedirectResponse("/login", status_code = PermissionErrorCode)
+        return await call_next(request)

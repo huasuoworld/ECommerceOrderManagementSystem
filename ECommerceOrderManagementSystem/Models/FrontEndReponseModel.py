@@ -23,9 +23,12 @@ class FileResponseModel(FileResponse):
         if filename:
             self.headers["Content-Disposition"] = f"attachment; filename={filename}"
 
-class PageDataReponseModel(BaseModel, Generic[T], NewBaseModel):
+class PageDataReponseModel(NewBaseModel, Generic[T]):
     status: str = SuccessStatusCode
     message: str = SuccessMessage
+    id: Optional[int] = None
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
     page_number: int = 1
     page_size: int = 10
     total_items: int = 1

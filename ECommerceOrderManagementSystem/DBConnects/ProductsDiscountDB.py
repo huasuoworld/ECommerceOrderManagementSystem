@@ -1,10 +1,13 @@
 from sqlalchemy import create_engine, Column, Integer, String
-from .SQLiteDB import Base
+from .NewBaseDB import NewBaseDB
+from typing import List
+from .SQLiteDB import getDB
+from ..Models.FrontEndReponseModel import PageDataReponseModel
+from ..Models.ProductsDiscountModel import ProductsDiscountModel
 
-class ProductsDiscountDB(Base):
+class ProductsDiscountDB(NewBaseDB):
     __tablename__ = 'products_discount'
 
-    id = Column(Integer, primary_key=True, index=True)
     product_id = Column(Integer)
     discount_name = Column(String)
     discount_code = Column(String)
@@ -15,5 +18,11 @@ class ProductsDiscountDB(Base):
     discount_start_time = Column(String)
     discount_end_time = Column(String)
     discount_status = Column(String)
-    created_at = Column(String)
-    updated_at = Column(String)
+
+    #list all products by IDs
+    def listProductsDiscountByProductsIDs(self, productIDs: List) -> PageDataReponseModel:
+        with getDB() as db:
+            productsDiscountList = db.query(ProductsDiscountDB).filter(ProductsDiscountDB.product_id.in_(productIDs), ProductsDiscountDB.discount_status == "Active").all()
+        return PageDataReponseModel(
+            items=[ProductsDiscountModel.model_validate(item) for item in productsDiscountList]
+        )

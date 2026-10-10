@@ -30,6 +30,8 @@ $(function () {
 			const isAuthenticated = Number(response.status) === CommonUtil.SuccessStatusCode;
 			if (isAuthenticated && response.data) {
 				CommonUtil.set(CommonUtil.UserSessionID, response.data);
+				window.location.assign("/products");
+				return;
 			}
 			$feedback
 				.removeClass("alert-secondary alert-danger alert-success")
