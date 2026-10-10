@@ -21,17 +21,16 @@ $(function () {
 		$submitButton.prop("disabled", true).text("Signing in...");
 		$feedback.removeClass("alert-danger alert-success").addClass("alert-secondary").text("Checking your account...");
 
-		$.ajax({
-			url: "/users/login",
-			method: "POST",
-			contentType: "application/json",
-			dataType: "json",
-			data: JSON.stringify({
-				username: $username.val().trim(),
-				password: $password.val()
-			})
-		}).done(function (response) {
-			const isAuthenticated = response.message === "Login successful";
+		const userModel = {
+			username: $username.val().trim(),
+			password: $password.val()
+		};
+
+		CommonUtil.request(CommonUtil.UsersLogin, CommonUtil.POST, userModel).done(function (response) {
+			const isAuthenticated = Number(response.status) === CommonUtil.SuccessStatusCode;
+			if (isAuthenticated && response.data) {
+				CommonUtil.set(CommonUtil.UserSessionID, response.data);
+			}
 			$feedback
 				.removeClass("alert-secondary alert-danger alert-success")
 				.addClass(isAuthenticated ? "alert-success" : "alert-danger")
