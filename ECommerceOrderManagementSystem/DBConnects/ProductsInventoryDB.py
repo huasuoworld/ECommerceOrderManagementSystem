@@ -25,6 +25,12 @@ class ProductsInventoryDB(NewBaseDB):
             db.session.commit()
             db.session.refresh(newProductInventory)
             return newProductInventory
+
+    #get a product inventory by its ID
+    def getProductInventoryByProductId(self, productId) -> ProductsInventoryModel:
+        with getDB() as db:
+            productInventory = db.query(ProductsInventoryDB).filter(ProductsInventoryDB.product_id == productId).first()
+        return ProductsInventoryModel.model_validate(productInventory) if productInventory else None
         
     #get a product inventory by its ID
     def getProductInventoryById(self, productInventoryId) -> ProductsInventoryModel:

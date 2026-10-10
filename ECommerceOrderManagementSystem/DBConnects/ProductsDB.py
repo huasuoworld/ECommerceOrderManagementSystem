@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine, Column, Integer, String
 from .SQLiteDB import getDB
 from ..Models.ProductsDiscountInventoryModel import ProductsDiscountInventoryModel
+from ..Models.ProductsModel import ProductsModel
 from ..Models.FrontEndReponseModel import PageDataReponseModel
 from .NewBaseDB import NewBaseDB
 from typing import List
@@ -31,10 +32,13 @@ class ProductsDB(NewBaseDB):
             db.session.refresh(new_product)
             return new_product
     #get a product by its ID
-    def getProductById(self, product_id) -> ProductsDiscountInventoryModel:
+    def getProductById(self, productId) -> ProductsModel:
         with getDB() as db:
-            product = db.query(ProductsDB).filter(ProductsDB.id == product_id).first()
-        return ProductsDiscountInventoryModel.model_validate(product) if product else None
+            product = db.query(ProductsDB).filter(ProductsDB.id == productId).first()
+            if product == None:
+                return None
+        return ProductsModel.model_validate(product) if product else None
+
     #list all products with pagination
     def listProducts(self, product: ProductsDiscountInventoryModel) -> PageDataReponseModel:
         with getDB() as db:

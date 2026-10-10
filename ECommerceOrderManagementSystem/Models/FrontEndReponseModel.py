@@ -7,12 +7,12 @@ from ..Models.NewBaseModel import NewBaseModel
 T = TypeVar('T')
 
 class SuccessResponseModel(BaseModel):
-    status: str = SuccessStatusCode
+    status: int = SuccessStatusCode
     message: str = SuccessMessage
     data: Optional[T] = None
 
 class ErrorResponseModel(BaseModel):
-    status: str = ErrorStatusCode
+    status: int = ErrorStatusCode
     message: str = ErrorMessage
     error_code: int = None
     details: dict = None
@@ -24,7 +24,7 @@ class FileResponseModel(FileResponse):
             self.headers["Content-Disposition"] = f"attachment; filename={filename}"
 
 class PageDataReponseModel(NewBaseModel, Generic[T]):
-    status: str = SuccessStatusCode
+    status: int = SuccessStatusCode
     message: str = SuccessMessage
     id: Optional[int] = None
     created_at: Optional[str] = None

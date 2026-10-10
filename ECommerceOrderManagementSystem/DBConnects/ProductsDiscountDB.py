@@ -19,6 +19,12 @@ class ProductsDiscountDB(NewBaseDB):
     discount_end_time = Column(String)
     discount_status = Column(String)
 
+    #get a product inventory by its ID
+    def getProductDiscountByProductId(self, productId) -> ProductsDiscountModel:
+        with getDB() as db:
+            productDiscount = db.query(ProductsDiscountDB).filter(ProductsDiscountDB.product_id == productId).first()
+        return ProductsDiscountModel.model_validate(productDiscount) if productDiscount else None
+
     #list all products by IDs
     def listProductsDiscountByProductsIDs(self, productIDs: List) -> PageDataReponseModel:
         with getDB() as db:
