@@ -1,66 +1,9 @@
-const products = [
-    {
-        id: 1,
-        category_name: "Apparel",
-        category_code: "APPAREL",
-        brand_name: "North Pine",
-        brand_code: "NP",
-        product_name: "City Lightweight Jacket",
-        product_code: "NP-JK-001",
-        product_price: 699,
-        product_size: "S / M / L",
-        product_color: "Pine Green",
-        product_sub_name: "Lightweight protection for everyday commutes",
-        product_description: "A clean silhouette and lightweight fabric provide comfortable protection for changing weather and city adventures.",
-        product_img_url: "",
-        product_status: "In stock",
-        product_discount: 100,
-        created_at: "2026-01-10",
-        updated_at: "2026-06-18"
-    },
-    {
-        id: 2,
-        category_name: "Electronics",
-        category_code: "DIGITAL",
-        brand_name: "Sound Grove",
-        brand_code: "SG",
-        product_name: "Wireless Travel Earbuds",
-        product_code: "SG-AU-204",
-        product_price: 459,
-        product_size: "One size",
-        product_color: "Mist White",
-        product_sub_name: "Clear sound, wherever you go",
-        product_description: "Lightweight, comfortable earbuds for your commute, workouts, and everyday listening.",
-        product_img_url: "",
-        product_status: "In stock",
-        product_discount: 0,
-        created_at: "2026-02-03",
-        updated_at: "2026-06-20"
-    },
-    {
-        id: 3,
-        category_name: "Lifestyle",
-        category_code: "LIFESTYLE",
-        brand_name: "Field Notes",
-        brand_code: "FN",
-        product_name: "Everyday Ceramic Mug",
-        product_code: "FN-HM-032",
-        product_price: 168,
-        product_size: "350 ml",
-        product_color: "Warm Sand",
-        product_sub_name: "Make a moment for yourself",
-        product_description: "A smooth glazed finish and just-right capacity make every drink feel like a little ritual.",
-        product_img_url: "",
-        product_status: "Low stock",
-        product_discount: 20,
-        created_at: "2026-03-12",
-        updated_at: "2026-06-22"
-    }
-];
-
 const formatPrice = (price) => `CA$${Number(price).toLocaleString("en-CA")}`;
 const pageSize = 2;
 let currentPage = 1;
+let products = [];
+let totalProducts = 0;
+let totalPages = 0;
 
 function makeTextElement(tagName, className, text) {
     return $("<" + tagName + ">")
@@ -74,8 +17,8 @@ function renderProduct(product) {
     const status = $("<span>", {
         class: "badge rounded-pill text-bg-light position-absolute top-0 end-0 m-3"
     })
-        .attr("aria-label", `Product status: ${product.product_status}`)
-        .text(product.product_status);
+        .attr("aria-label", `Product status: ${product.inventory_status}`)
+        .text(product.inventory_status);
 
     if (product.product_img_url) {
         imageArea.append(
@@ -110,7 +53,7 @@ function renderProduct(product) {
         class: "d-flex align-items-end justify-content-between gap-2 border-top pt-3 mt-auto"
     });
     const priceArea = $("<div>", { class: "d-flex flex-wrap align-items-baseline gap-2" });
-    const discount = Number(product.product_discount) || 0;
+    const discount = Number(product.discount_price) || 0;
     const hasDiscount = discount > 0;
     const currentPrice = hasDiscount
         ? Math.max(0, Number(product.product_price) - discount)
@@ -141,20 +84,50 @@ function renderProduct(product) {
 }
 
 $(function () {
-    $("#product-count").text(`${products.length} ${products.length === 1 ? "product" : "products"}`);
     loadCart();
-
-    if (products.length) {
-        renderProducts();
-    } else {
-        $("#product-list").append(
-            $("<div>", { class: "col" }).append(
-                makeTextElement("p", "alert alert-light text-center mb-0", "No products are available right now.")
-            )
-        );
-        $("#pagination-summary, #product-pagination").hide();
-    }
+    loadProducts();
 });
+
+function loadProducts() {
+    CommonUtil.request(
+        `/products/listProducts?page_number=${currentPage}&page_size=${pageSize}`,
+        CommonUtil.GET
+    )
+        .done((response) => {
+            products = response.items;
+            totalProducts = response.total_items;
+            totalPages = response.total_pages;
+            $("#product-count").text(
+                `${totalProducts} ${totalProducts === 1 ? "product" : "products"}`
+            );
+
+            if (totalProducts) {
+                $("#pagination-summary, #product-pagination").show();
+                renderProducts();
+                return;
+            }
+
+            $("#product-list").empty().append(
+                $("<div>", { class: "col" }).append(
+                    makeTextElement("p", "alert alert-light text-center mb-0", "No products are available right now.")
+                )
+            );
+            $("#pagination-summary, #product-pagination").hide();
+        })
+        .fail((xhr) => {
+            $("#product-count").text("");
+            $("#product-list").empty().append(
+                $("<div>", { class: "col" }).append(
+                    makeTextElement(
+                        "p",
+                        "alert alert-danger text-center mb-0",
+                        xhr.responseJSON?.detail || xhr.responseJSON?.message || "Unable to load products."
+                    )
+                )
+            );
+            $("#pagination-summary, #product-pagination").hide();
+        });
+}
 
 function showCartMessage(message, type = "danger") {
     $("#cart-message")
@@ -294,13 +267,11 @@ $(document).on("click", "[data-remove-product]", function () {
 
 function renderProducts() {
     const startIndex = (currentPage - 1) * pageSize;
-    const pageProducts = products.slice(startIndex, startIndex + pageSize);
-    const totalPages = Math.ceil(products.length / pageSize);
-    const endIndex = Math.min(startIndex + pageProducts.length, products.length);
+    const endIndex = Math.min(startIndex + products.length, totalProducts);
 
-    $("#product-list").empty().append(pageProducts.map(renderProduct));
+    $("#product-list").empty().append(products.map(renderProduct));
     $("#pagination-summary").text(
-        `Showing ${startIndex + 1}–${endIndex} of ${products.length} products`
+        `Showing ${startIndex + 1}–${endIndex} of ${totalProducts} products`
     );
     renderPagination(totalPages);
 }
@@ -341,10 +312,9 @@ function makePaginationItem(label, page, disabled, active = false) {
 
 $(document).on("click", "#product-pagination [data-page]", function () {
     const selectedPage = Number($(this).attr("data-page"));
-    const totalPages = Math.ceil(products.length / pageSize);
 
     if (selectedPage >= 1 && selectedPage <= totalPages && selectedPage !== currentPage) {
         currentPage = selectedPage;
-        renderProducts();
+        loadProducts();
     }
 });

@@ -1,12 +1,13 @@
 from sqlalchemy import create_engine, Column, Integer, String
-from .SQLiteDB import Base, getDB
-from ..Models.ProductsModel import ProductsModel
+from .SQLiteDB import getDB
+from ..Models.ProductsDiscountInventoryModel import ProductsDiscountInventoryModel
 from ..Models.FrontEndReponseModel import PageDataReponseModel
+from .NewBaseDB import NewBaseDB
+from typing import List
 
-class ProductsDB(Base):
+class ProductsDB(NewBaseDB):
     __tablename__ = 'products'
 
-    id = Column(Integer, primary_key=True, index=True)
     category_name = Column(String)
     category_code = Column(String)
     brand_name = Column(String)
@@ -20,8 +21,6 @@ class ProductsDB(Base):
     product_description = Column(String)
     product_img_url = Column(String)
     product_status = Column(String)
-    created_at = Column(String)
-    updated_at = Column(String)
 
     #create a new product
     def createProduct(self, product_data):
@@ -32,12 +31,12 @@ class ProductsDB(Base):
             db.session.refresh(new_product)
             return new_product
     #get a product by its ID
-    def getProductById(self, product_id) -> ProductsModel:
+    def getProductById(self, product_id) -> ProductsDiscountInventoryModel:
         with getDB() as db:
             product = db.query(ProductsDB).filter(ProductsDB.id == product_id).first()
-        return ProductsModel.model_validate(product) if product else None
+        return ProductsDiscountInventoryModel.model_validate(product) if product else None
     #list all products with pagination
-    def listProducts(self, product: ProductsModel) -> PageDataReponseModel:
+    def listProducts(self, product: ProductsDiscountInventoryModel) -> PageDataReponseModel:
         with getDB() as db:
             total = db.query(ProductsDB).count()
             offset = (product.page_number - 1) * product.page_size
@@ -47,5 +46,10 @@ class ProductsDB(Base):
             page_size = product.page_size,
             total_items = total,
             total_pages = (total + product.page_size - 1) // product.page_size,
-            items = [ProductsModel.model_validate(product) for product in products]
+            items = [ProductsDiscountInventoryModel.model_validate(product) for product in products]
         )
+    #list all products by IDs
+    def listProductsByIDs(self, productIDs: List) -> PageDataReponseModel:
+        with getDB as db:
+            products = db.query(ProductsDB).filter(ProductsDB.id.in_(productIDs)).all()
+        return PageDataReponseModel(ProductsDiscountInventoryModel.model_validate(product) for product in products)
