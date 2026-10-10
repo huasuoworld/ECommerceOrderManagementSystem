@@ -17,16 +17,12 @@ async def products_page():
 @app.middleware("http")
 async def permissionCheck(request: Request, call_next):
     userSessionID = request.cookies.get(UserSessionID)
-    isAuthenticated = True
     requestPath = request.url.path
-    #check url is in the white list
-    if(requestPath in PathWhiteList or requestPath.startswith(StaticPath)):
-        isAuthenticated = True
+    if requestPath in PathWhiteList or requestPath.startswith(StaticPath):
         return await call_next(request)
-    else:
-        #TODO check user permission
-        logger.info("userSessionID: ", userSessionID)
-        #check userSessionID, if not redirect to the login page
-        if not isAuthenticated:
-            return RedirectResponse("/login", status_code = PermissionErrorCode)
-        return await call_next(request)
+
+    if not userSessionID:
+        logger.info("Unauthenticated request redirected to login: %s", requestPath)
+        return RedirectResponse("/login", status_code=PermissionErrorCode)
+
+    return await call_next(request)
