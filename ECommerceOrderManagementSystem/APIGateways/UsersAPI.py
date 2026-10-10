@@ -1,37 +1,26 @@
-import logging
-from pathlib import Path
-
-from fastapi import FastAPI
-from pydantic import BaseModel
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
+from ..Models.UsersModel import UsersModel
+from ..Models.FrontEndReponseModel import SuccessResponseModel, ErrorResponseModel, FileResponseModel
 from ..Services.UserLoginService import UserLoginService
+from ..CommonUtils import StaticFilesPath, LoggingUtil
+from .APIGatewayDefine import app
 
-logger = logging.getLogger(__name__)
-STATIC_WEB_DIR = Path(__file__).resolve().parent.parent / "StaticsWeb"
-
-app = FastAPI(title="My API", version="1.0.0")
-app.mount("/static", StaticFiles(directory=STATIC_WEB_DIR), name="static")
+# Initialize logger
 user_login_service = UserLoginService()
 
-
+# Define the login web page endpoint
 @app.get("/", include_in_schema=False)
 @app.get("/login", include_in_schema=False)
 async def users_login_page():
-    return FileResponse(STATIC_WEB_DIR / "UsersLogin.html")
+    return FileResponseModel(path=StaticFilesPath.STATIC_WEB_DIR / "UsersLogin.html")
 
-
-class UsersAPI(BaseModel):
-    username: str
-    password: str
-
-
+# Define the login endpoint
 @app.post("/users/login")
-async def login(user: UsersAPI):
-    logger.info("Login request received")
-    is_authenticated = user_login_service.login(user.username, user.password)
+async def login(userModel: UsersModel):
+    LoggingUtil.logger.info("Login request received")
+    sessionId = user_login_service.login(userModel)
+    # TODO add cookie and session management for authenticated users
     # Here you can implement your login logic, e.g., check the username and password against a database
-    if is_authenticated:
-        return {"message": "Login successful"}
+    if sessionId == None:
+        return ErrorResponseModel()
     else:
-        return {"message": "Invalid username or password"}
+        return SuccessResponseModel(data = sessionId)

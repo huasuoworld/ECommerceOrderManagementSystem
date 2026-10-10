@@ -1,17 +1,19 @@
-import logging
+from ..DBConnects.SQLiteDB import get_db
+from ..DBConnects import UsersDB
+from ..APIGateways.UsersAPI import UsersModel
+from ..CommonUtils.LoggingUtil import logger
+from ..RedisCache.RedisConnect import getSessionCache, setSessionCache
+import uuid
 
-from ..DBConnects.SQLiteDB import SessionLocal
-from ..DBConnects.UsersDB import UsersDB
-
-logger = logging.getLogger(__name__)
+user_db = UsersDB()
 
 class UserLoginService(object):
-    def __init__(self):
-        self.db = SessionLocal()
-
-    def login(self, username: str, password: str) -> bool:
-        user = self.db.query(UsersDB).filter(UsersDB.username == username).first()
+    # 
+    def login(usersModel: UsersModel) -> UsersModel:
+        user = user_db.query_user_by_username(usersModel.username)
         logger.info("Login user lookup completed; user_found=%s", user is not None)
-        if user and user.password == password:
-            return True
-        return False
+        if user and user.password == usersModel.password:
+            sessionId = str(uuid.uuid4())
+            setSessionCache(sessionId, user)
+            return sessionId
+        return None
