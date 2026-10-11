@@ -11,6 +11,9 @@
         UserSessionIDCookiePath: "/",
         ShoppingCartURL: "/shoppingCart",
         ShoppingCartItems: "/shoppingCart/items",
+        ProductsOrderURL: "/order",
+        ProductsOrderConfirmURL: "/order/confirm",
+        ProductsOrderPaymentURL: "/productsOrderPayment/pay",
         UsersLogin: "/users/login",
         USER_STATUS: {
             ACTIVE: 1,

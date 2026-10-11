@@ -1,7 +1,10 @@
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import Session
+from typing import Optional
 from .SQLiteDB import getDB
 from .NewBaseDB import NewBaseDB
 from ..Models.ProductsShoppingCartModel import ProductsShoppingCartModel
+from ..CommonUtils.ConstantUtil import DBExcludeShoppingCartColumns, getCurrentTime
 
 class ProductsShoppingCartDB(NewBaseDB):
     __tablename__ = 'products_shopping_cart'
@@ -23,16 +26,37 @@ class ProductsShoppingCartDB(NewBaseDB):
             products = db.query(ProductsShoppingCartDB).filter(ProductsShoppingCartDB.users_id == userId).all()
         return products
 
+        #get shopping cart's items by userId
+    def queryProductsShoppingCartByUserIdWithSession(self, userId: int, db: Optional[Session] = None):
+        if db is not None:
+            return db.query(ProductsShoppingCartDB).filter(
+                ProductsShoppingCartDB.users_id == userId
+            ).all()
+        with getDB() as session:
+            return session.query(ProductsShoppingCartDB).filter(
+                ProductsShoppingCartDB.users_id == userId
+            ).all()
+
     #add shopping cart's items 
     def addProductsShoppingCartByProductId(self, userId: int, productShoppingCart: ProductsShoppingCartModel):
-        productData = productShoppingCart.model_dump(exclude={"unit_price", "products_total_price"})
+        productShoppingCart.users_id = userId
+        productData = productShoppingCart.model_dump(
+            exclude=DBExcludeShoppingCartColumns
+        )
         with getDB() as db:
-            productDBData = db.query(ProductsShoppingCartDB).filter(ProductsShoppingCartDB.users_id == userId, ProductsShoppingCartDB.product_id == productData["product_id"]).first()
+            productDBData = db.query(ProductsShoppingCartDB).filter(
+                ProductsShoppingCartDB.users_id == userId,
+                ProductsShoppingCartDB.product_id == productShoppingCart.product_id,
+            ).first()
+            timestamp = getCurrentTime()
             if productDBData is None:
-                newProduct = ProductsShoppingCartDB(**productData, users_id=userId)
+                newProduct = ProductsShoppingCartDB(**productData)
+                newProduct.created_at = timestamp
+                newProduct.updated_at = timestamp
                 db.add(newProduct)
             else:
-                productDBData.products_quantity += productData["products_quantity"]
+                productDBData.updated_at = timestamp
+                productDBData.products_quantity += productShoppingCart.products_quantity
             db.commit()
 
             products = db.query(ProductsShoppingCartDB).filter(ProductsShoppingCartDB.users_id == userId).all()
@@ -44,7 +68,9 @@ class ProductsShoppingCartDB(NewBaseDB):
             productDBData = db.query(ProductsShoppingCartDB).filter(ProductsShoppingCartDB.users_id == userId, ProductsShoppingCartDB.product_id == productId).first()
             if productDBData is None:
                 raise KeyError(productId)
+            timestamp = getCurrentTime()
             productDBData.products_quantity = quantity
+            productDBData.updated_at = timestamp
             db.commit()
             products = db.query(ProductsShoppingCartDB).filter(ProductsShoppingCartDB.users_id == userId).all()
         return products
@@ -59,3 +85,7 @@ class ProductsShoppingCartDB(NewBaseDB):
             db.commit()
             products = db.query(ProductsShoppingCartDB).filter(ProductsShoppingCartDB.users_id == userId).all()
         return products
+
+    #delete shopping cart's items by userId
+    def delProductsShoppingCartByUserIdWithSession(self, db: Session, userId):
+        db.query(ProductsShoppingCartDB).filter(ProductsShoppingCartDB.users_id == userId).delete(synchronize_session=False)

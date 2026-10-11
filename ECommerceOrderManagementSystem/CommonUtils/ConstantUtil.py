@@ -1,4 +1,5 @@
 from pathlib import Path
+import datetime, uuid
 
 STATIC_WEB_DIR = Path(__file__).resolve().parent.parent / "StaticsWeb"
 
@@ -14,3 +15,28 @@ ErrorMessage = "Error"
 UserSessionID = "userSessionID"
 
 PathWhiteList = ["/", "/login"]
+OrderPrefix = "ORD-"
+
+PaymentStatusUnpaid = "Unpaid"
+PaymentStatusPaying = "Paying"
+PaymentStatusPaid = "Paid"
+PaymentStatusFailed = "Failed"
+
+OrderStatusUnpaid = "Unpaid"
+OrderStatusPaid = "Paid"
+OrderStatusShipped = "Shipped"
+OrderStatusCompleted = "Completed"
+OrderStatusCancelled = "Cancelled"
+OrderStatusRefunded = "Refunded"
+
+DBExcludeColumns = {"id", "page_number", "page_size"}
+DBExcludeShoppingCartColumns = DBExcludeColumns | {"users_id"}
+
+def getCurrentTime():
+    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+def getUUID4():
+    return uuid.uuid4()
+
+def getOrderNumber():
+    return OrderPrefix + str(uuid.uuid4())

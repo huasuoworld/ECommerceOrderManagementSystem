@@ -125,10 +125,13 @@
                 <span class="brand-mark" aria-hidden="true">M</span>
                 <span class="brand-name">Market Desk</span>
             </div>
-            <button class="btn btn-primary cart-toggle" id="cart-toggle" type="button"
-                    aria-expanded="false" aria-controls="cart-panel">
-                Cart <span class="badge text-bg-light ms-1" id="cart-item-count">0</span>
-            </button>
+            <div class="d-flex align-items-center gap-2">
+                <a class="btn btn-outline-success" href="/productsOrder">My orders</a>
+                <button class="btn btn-primary cart-toggle" id="cart-toggle" type="button"
+                        aria-expanded="false" aria-controls="cart-panel">
+                    Cart <span class="badge text-bg-light ms-1" id="cart-item-count">0</span>
+                </button>
+            </div>
         </header>
 
         <section class="card border-0 shadow-sm mb-5 d-none" id="cart-panel" aria-labelledby="cart-title">
@@ -142,6 +145,11 @@
                 <div class="d-flex align-items-center justify-content-between border-top pt-3 mt-3">
                     <span class="fw-semibold">Subtotal</span>
                     <span class="fw-bold" id="cart-subtotal">CA$0</span>
+                </div>
+                <div class="d-flex justify-content-end mt-3">
+                    <button class="btn btn-success" id="cart-checkout" type="button" disabled>
+                        Go to checkout
+                    </button>
                 </div>
             </div>
         </section>
@@ -171,6 +179,6 @@
     <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
     <script src="/static/CommonUtil.js"></script>
     <script src="/static/Products.js" defer></script>
-    <script src="/static/ProductsShoppingCart.js" defer></script>
+    <script src="/static/ProductsShoppingCart.js?v=cart-api-checkout-20261010" defer></script>
 </body>
 </html>

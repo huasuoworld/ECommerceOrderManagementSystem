@@ -20,6 +20,9 @@ class ShoppingCartService:
             unitPrice = max(0, (cartItem.product_price or 0) - (cartItem.discount_price or 0))
             quantity = cartItem.products_quantity or 0
             items.append(ProductsShoppingCartModel(
+                id=cartItem.id,
+                created_at=cartItem.created_at,
+                updated_at=cartItem.updated_at,
                 product_id=cartItem.product_id,
                 products_discount_id=cartItem.products_discount_id,
                 products_inventory_id=cartItem.products_inventory_id,

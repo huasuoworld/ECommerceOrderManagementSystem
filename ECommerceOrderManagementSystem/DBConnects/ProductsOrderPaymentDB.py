@@ -1,17 +1,29 @@
 from sqlalchemy import create_engine, Column, Integer, String
-from .SQLiteDB import Base
+from .NewBaseDB import NewBaseDB
+from ..Models import ProductsOrderPaymentModel
+from .SQLiteDB import getDB
 
-class ProductsOrderPaymentDB(Base):
+class ProductsOrderPaymentDB(NewBaseDB):
     __tablename__ = 'products_order_payment'
 
-    id = Column(Integer, primary_key=True, index=True)
     products_order_id = Column(Integer)
     users_id = Column(Integer)
     payment_number = Column(String)
-    payment_channel = Column(String)
-    payment_type = Column(String)
+    payment_channel = Column(String, default="CIBC")
+    payment_type = Column(String, default="ONLINE")
     payment_amount = Column(Integer)
     payment_order_number = Column(String)
     payment_status = Column(String)
-    created_at = Column(String)
-    updated_at = Column(String)
+
+    #create productsOrderItems into database
+    def createProductsOrderPayment(productsOrderPaymentModel: ProductsOrderPaymentModel):
+        with getDB as db:
+            productsOrderPaymentDBData = ProductsOrderPaymentDB(**productsOrderPaymentModel)
+            db.add(productsOrderPaymentDBData)
+            db.commit()
+        return ProductsOrderPaymentModel.model_validate(productsOrderPaymentDBData)
+
+    def getProductsOrderPaymentById(productsOrderPaymentId: int):
+        with getDB as db:
+            productsOrderPaymentDBData = db.query(ProductsOrderPaymentDB).filter(ProductsOrderPaymentDB.id == productsOrderPaymentId).first()
+        return ProductsOrderPaymentModel.model_validate(productsOrderPaymentDBData)
