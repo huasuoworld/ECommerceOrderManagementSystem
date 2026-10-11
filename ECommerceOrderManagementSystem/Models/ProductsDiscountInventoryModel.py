@@ -13,6 +13,7 @@ class ProductsDiscountInventoryModel(ProductsModel):
     discount_price: Optional[int] = None
     discount_person_limit_stock: Optional[int] = None
     discount_stock: Optional[int] = None
+    discount_status: Optional[str] = None
     #products_inventory model
     products_inventory_id: Optional[int] = None
     warehouse_name: Optional[str] = None
@@ -49,4 +50,5 @@ class ProductsDiscountInventoryModel(ProductsModel):
         productsDiscountInventory.discount_person_limit_stock = productsDiscount.discount_person_limit_stock
         productsDiscountInventory.discount_price = productsDiscount.discount_price
         productsDiscountInventory.discount_stock = productsDiscount.discount_stock
+        productsDiscountInventory.discount_status = productsDiscount.discount_status
         return productsDiscountInventory
