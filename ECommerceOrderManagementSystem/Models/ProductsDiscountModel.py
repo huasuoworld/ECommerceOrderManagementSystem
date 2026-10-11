@@ -1,6 +1,6 @@
-from .NewBaseModel import NewBaseModel
+from .UsersBaseModel import UsersBaseModel
 
-class ProductsDiscountModel(NewBaseModel):
+class ProductsDiscountModel(UsersBaseModel):
     product_id: int
     discount_name: str
     discount_code: str

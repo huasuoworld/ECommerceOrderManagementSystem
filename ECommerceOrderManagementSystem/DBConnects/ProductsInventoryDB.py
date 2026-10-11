@@ -1,11 +1,11 @@
 from sqlalchemy import create_engine, Column, Integer, String
-from .NewBaseDB import NewBaseDB
+from .UsersBaseDB import UsersBaseDB
 from .SQLiteDB import getDB
 from ..Models.FrontEndReponseModel import PageDataReponseModel
 from ..Models.ProductsInventoryModel import ProductsInventoryModel
 from typing import List
 
-class ProductsInventoryDB(NewBaseDB):
+class ProductsInventoryDB(UsersBaseDB):
     __tablename__ = 'products_inventory'
 
     product_id = Column("products_id", Integer)

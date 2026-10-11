@@ -1,12 +1,12 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import Session
-from .NewBaseDB import NewBaseDB
+from .UsersBaseDB import UsersBaseDB
 from ..Models.ProductsOrderItemsModel import ProductsOrderItemsModel
 from typing import List
 from ..CommonUtils.ConstantUtil import DBExcludeColumns, getCurrentTime
 from .SQLiteDB import getDB
 
-class ProductsOrderItemsDB(NewBaseDB):
+class ProductsOrderItemsDB(UsersBaseDB):
     __tablename__ = 'products_order_items'
 
     products_order_id = Column(Integer)

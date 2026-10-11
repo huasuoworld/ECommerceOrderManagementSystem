@@ -1,8 +1,8 @@
-from .NewBaseModel import NewBaseModel
+from .UsersBaseModel import UsersBaseModel
 from .FrontEndReponseModel import PageDataReponseModel
 
 #products model
-class ProductsModel(NewBaseModel):
+class ProductsModel(UsersBaseModel):
     category_name: str
     category_code: str
     brand_name: str
