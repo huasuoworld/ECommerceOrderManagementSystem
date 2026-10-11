@@ -26,6 +26,11 @@ async def products_management_page():
     return FileResponse(STATIC_WEB_DIR / "ProductsManagement.html")
 
 
+@app.get("/usersManagement", include_in_schema=False)
+async def users_management_page():
+    return FileResponse(STATIC_WEB_DIR / "UsersManagement.html")
+
+
 @app.get("/productsOrder", include_in_schema=False)
 @app.get("/my-orders", include_in_schema=False)
 async def products_order_page():
