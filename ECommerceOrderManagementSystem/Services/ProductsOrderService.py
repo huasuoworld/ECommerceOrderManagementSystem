@@ -57,7 +57,8 @@ class ProductsOrderService:
                     item_ordder_number=orderNumber,
                     item_product_price=item.product_price,
                     item_discount_price=item.discount_price,
-                    item_unit_price=max(0, item.product_price - item.discount_price)
+                    item_unit_price=max(0, item.product_price - item.discount_price),
+                    seller_id=item.seller_id
                 )
                 for item in cartItems
             ]

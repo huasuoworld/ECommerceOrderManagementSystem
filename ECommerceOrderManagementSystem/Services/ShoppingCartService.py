@@ -74,6 +74,7 @@ class ShoppingCartService:
             products_quantity=quantity,
             unit_price=unitPrice,
             products_total_price=unitPrice * quantity,
+            seller_id=product.seller_id
         )
         productsShoppingCartDB.addProductsShoppingCartByProductId(userId, productData)
         return self.getCart(userId)

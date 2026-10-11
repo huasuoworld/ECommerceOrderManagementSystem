@@ -36,6 +36,7 @@ class ProductsDiscountInventoryModel(ProductsModel):
         productsDiscountInventory.warehouse_name = productsInventory.warehouse_name
         productsDiscountInventory.inventory_available_stock = productsInventory.inventory_available_stock
         productsDiscountInventory.inventory_status = productsInventory.inventory_status
+        productsDiscountInventory.seller_id = productsInventory.seller_id
         return productsDiscountInventory
 
     #copy productsDiscount to productsDiscountInventory
@@ -49,4 +50,5 @@ class ProductsDiscountInventoryModel(ProductsModel):
         productsDiscountInventory.discount_person_limit_stock = productsDiscount.discount_person_limit_stock
         productsDiscountInventory.discount_price = productsDiscount.discount_price
         productsDiscountInventory.discount_stock = productsDiscount.discount_stock
+        productsDiscountInventory.seller_id = productsDiscount.seller_id
         return productsDiscountInventory
