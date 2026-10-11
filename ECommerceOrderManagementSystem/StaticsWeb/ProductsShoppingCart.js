@@ -1,4 +1,5 @@
 const formatCartPrice = (price) => `CA$${Number(price).toLocaleString("en-CA")}`;
+let currentCart = null;
 
 function makeCartTextElement(tagName, className, text) {
     return $("<" + tagName + ">")
@@ -36,11 +37,13 @@ function loadCart() {
 }
 
 function renderCart(cart) {
+    currentCart = cart;
     const cartItems = $("#cart-items").empty();
     const itemCount = cart.items.reduce((total, item) => total + item.products_quantity, 0);
     const subtotal = cart.items.reduce((total, item) => total + item.products_total_price, 0);
     $("#cart-item-count").text(itemCount);
     $("#cart-subtotal").text(formatCartPrice(subtotal));
+    $("#cart-checkout").prop("disabled", cart.items.length === 0);
 
     if (!cart.items.length) {
         cartItems.append(
@@ -124,6 +127,15 @@ $("#cart-toggle").on("click", function () {
 $("#cart-close").on("click", function () {
     $("#cart-panel").addClass("d-none");
     $("#cart-toggle").attr("aria-expanded", "false").trigger("focus");
+});
+
+$("#cart-checkout").on("click", function () {
+    if (!currentCart || currentCart.items.length === 0) {
+        showCartMessage("Add an item to your cart before checking out.");
+        return;
+    }
+
+    window.location.assign("/productsOrder?checkout=1");
 });
 
 $(document).on("click", "[data-add-product]", function () {

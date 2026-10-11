@@ -1,9 +1,12 @@
 from typing import Optional
-
 from pydantic import BaseModel
+from .NewBaseModel import NewBaseModel
 
-
-class ProductsShoppingCartModel(BaseModel):
+class ProductsShoppingCartModel(NewBaseModel):
+    id: Optional[int] = None
+    users_id: Optional[int] = None
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
     product_id: int
     products_discount_id: int
     products_inventory_id: int
@@ -15,3 +18,6 @@ class ProductsShoppingCartModel(BaseModel):
     products_quantity: int
     unit_price: int
     products_total_price: int
+
+    class Config:
+                from_attributes = True

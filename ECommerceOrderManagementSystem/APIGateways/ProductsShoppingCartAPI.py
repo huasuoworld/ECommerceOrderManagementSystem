@@ -1,10 +1,8 @@
-from fastapi import Depends, HTTPException, Request
+from fastapi import Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from ..Services.ShoppingCartService import ShoppingCartService
-from .APIGatewayDefine import app
-from ..CommonUtils.ConstantUtil import UserSessionID
-from ..RedisCache.RedisConnect import getSessionCache
+from .APIGatewayDefine import app, getCurrentUser
 from ..Models.UsersModel import UsersModel
 
 shoppingCartService = ShoppingCartService()
@@ -17,15 +15,6 @@ class AddCartItemRequest(BaseModel):
 
 class UpdateCartItemRequest(BaseModel):
     quantity: int = Field(gt=0)
-
-
-def getCurrentUser(request: Request) -> UsersModel:
-    sessionId = request.cookies.get(UserSessionID)
-    user = getSessionCache(sessionId) if sessionId else None
-    if user is None:
-        raise HTTPException(status_code=401, detail="Authentication required")
-    return user
-
 
 @app.get("/shoppingCart")
 async def getShoppingCart(user: UsersModel = Depends(getCurrentUser)):

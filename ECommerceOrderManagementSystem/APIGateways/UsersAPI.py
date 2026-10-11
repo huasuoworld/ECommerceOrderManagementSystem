@@ -1,17 +1,11 @@
 from ..Models.UsersModel import UsersModel
 from ..Models.FrontEndReponseModel import SuccessResponseModel, ErrorResponseModel, FileResponseModel
 from ..Services.UserLoginService import UserLoginService
-from ..CommonUtils import StaticFilesPath, LoggingUtil
+from ..CommonUtils import LoggingUtil
 from .APIGatewayDefine import app
 
 # Initialize logger
 user_login_service = UserLoginService()
-
-# Define the login web page endpoint
-@app.get("/", include_in_schema=False)
-@app.get("/login", include_in_schema=False)
-async def users_login_page():
-    return FileResponseModel(path=StaticFilesPath.STATIC_WEB_DIR / "UsersLogin.html")
 
 # Define the login endpoint
 @app.post("/users/login")
