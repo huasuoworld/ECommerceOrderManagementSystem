@@ -1,9 +1,9 @@
 from sqlalchemy import create_engine, Column, Integer, String
-from .UsersBaseDB import UsersBaseDB
+from .NewBaseDB import NewBaseDB
 from ..Models import ProductsOrderPaymentModel
 from .SQLiteDB import getDB
 
-class ProductsOrderPaymentDB(UsersBaseDB):
+class ProductsOrderPaymentDB(NewBaseDB):
     __tablename__ = 'products_order_payment'
 
     products_order_id = Column(Integer)

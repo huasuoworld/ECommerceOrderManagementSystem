@@ -1,9 +1,10 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class NewBaseModel(BaseModel):
-    id: int
-    created_at: str
-    updated_at: str
+    id: Optional[int] = None
+    created_at: Optional[str] = str
+    updated_at: Optional[str] = str
     page_number: int = 1
     page_size: int = 10
 
