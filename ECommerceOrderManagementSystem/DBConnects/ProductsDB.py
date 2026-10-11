@@ -3,10 +3,10 @@ from .SQLiteDB import getDB
 from ..Models.ProductsDiscountInventoryModel import ProductsDiscountInventoryModel
 from ..Models.ProductsModel import ProductsModel
 from ..Models.FrontEndReponseModel import PageDataReponseModel
-from .NewBaseDB import NewBaseDB
+from .UsersBaseDB import UsersBaseDB
 from typing import List
 
-class ProductsDB(NewBaseDB):
+class ProductsDB(UsersBaseDB):
     __tablename__ = 'products'
 
     category_name = Column(String)

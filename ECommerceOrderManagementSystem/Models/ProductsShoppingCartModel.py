@@ -1,8 +1,8 @@
 from typing import Optional
 from pydantic import BaseModel
-from .NewBaseModel import NewBaseModel
+from .UsersBaseModel import UsersBaseModel
 
-class ProductsShoppingCartModel(NewBaseModel):
+class ProductsShoppingCartModel(UsersBaseModel):
     id: Optional[int] = None
     users_id: Optional[int] = None
     created_at: Optional[str] = None

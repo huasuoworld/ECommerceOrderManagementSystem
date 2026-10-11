@@ -1,11 +1,11 @@
 from sqlalchemy import create_engine, Column, Integer, String
-from .NewBaseDB import NewBaseDB
+from .UsersBaseDB import UsersBaseDB
 from typing import List
 from .SQLiteDB import getDB
 from ..Models.FrontEndReponseModel import PageDataReponseModel
 from ..Models.ProductsDiscountModel import ProductsDiscountModel
 
-class ProductsDiscountDB(NewBaseDB):
+class ProductsDiscountDB(UsersBaseDB):
     __tablename__ = 'products_discount'
 
     product_id = Column(Integer)

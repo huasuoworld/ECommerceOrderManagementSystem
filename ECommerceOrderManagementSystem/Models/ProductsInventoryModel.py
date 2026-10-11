@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from .NewBaseModel import NewBaseModel
+from .UsersBaseModel import UsersBaseModel
 from typing import List
 from .FrontEndReponseModel import PageDataReponseModel
 from .ProductsModel import ProductsModel
 
 #ProductsInventory model
-class ProductsInventoryModel(NewBaseModel):
+class ProductsInventoryModel(UsersBaseModel):
     product_id: int
     warehouse_name: str
     warehouse_code: str

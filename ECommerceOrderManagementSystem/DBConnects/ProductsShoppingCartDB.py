@@ -2,11 +2,11 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import Session
 from typing import Optional
 from .SQLiteDB import getDB
-from .NewBaseDB import NewBaseDB
+from .UsersBaseDB import UsersBaseDB
 from ..Models.ProductsShoppingCartModel import ProductsShoppingCartModel
 from ..CommonUtils.ConstantUtil import DBExcludeShoppingCartColumns, getCurrentTime
 
-class ProductsShoppingCartDB(NewBaseDB):
+class ProductsShoppingCartDB(UsersBaseDB):
     __tablename__ = 'products_shopping_cart'
 
     product_id = Column(Integer)

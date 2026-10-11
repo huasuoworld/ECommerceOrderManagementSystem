@@ -1,8 +1,8 @@
 from typing import Optional
 
-from .NewBaseModel import NewBaseModel
+from .UsersBaseModel import UsersBaseModel
 
-class ProductsOrderModel(NewBaseModel):
+class ProductsOrderModel(UsersBaseModel):
     id: Optional[int] = None
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
