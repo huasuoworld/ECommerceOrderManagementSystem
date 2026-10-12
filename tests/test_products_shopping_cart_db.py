@@ -58,6 +58,40 @@ def test_add_and_update_cart_item_persist_timestamps(shopping_cart_db, monkeypat
 
     with shopping_cart_db() as session:
         stored_item = session.query(ProductsShoppingCartDB).one()
+        assert stored_item.users_id == 7
         assert stored_item.products_quantity == 3
         assert stored_item.created_at == "2026-10-10 23:00:00"
         assert stored_item.updated_at == "2026-10-10 23:01:00"
+
+
+def test_update_and_remove_cart_item(shopping_cart_db, monkeypatch):
+    timestamps = iter(["2026-10-10 23:00:00", "2026-10-10 23:05:00"])
+    monkeypatch.setattr(cart_db_module, "getCurrentTime", lambda: next(timestamps))
+    cart_db = ProductsShoppingCartDB()
+    item = ProductsShoppingCartModel(
+        users_id=7,
+        product_id=1,
+        products_discount_id=1,
+        products_inventory_id=1,
+        product_name="Test Jacket",
+        product_code="J-1",
+        product_price=699,
+        discount_price=100,
+        products_quantity=1,
+        unit_price=599,
+        products_total_price=599,
+    )
+
+    cart_db.addProductsShoppingCartByProductId(7, item)
+    cart_db.updateProductsShoppingCartQuantity(7, 1, 4)
+
+    with shopping_cart_db() as session:
+        stored_item = session.query(ProductsShoppingCartDB).one()
+        assert stored_item.products_quantity == 4
+        assert stored_item.updated_at == "2026-10-10 23:05:00"
+
+    remaining_items = cart_db.delProductsShoppingCartByProductId(7, 1)
+    assert remaining_items == []
+
+    with shopping_cart_db() as session:
+        assert session.query(ProductsShoppingCartDB).count() == 0

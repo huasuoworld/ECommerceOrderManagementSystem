@@ -29,12 +29,12 @@ class ProductsOrderItemsDB(UsersBaseDB):
     ) -> List["ProductsOrderItemsDB"]:
         productsOrderItemsDBDataList = []
         for productsOrderItemsModel in productsOrderItemsModelList:
-            productsOrderItemData: ProductsOrderItemsModel = productsOrderItemsModel.model_dump(
+            productsOrderItemData = productsOrderItemsModel.model_dump(
                 exclude=DBExcludeColumns
             )
             timestamp = getCurrentTime()
-            productsOrderItemData.created_at = timestamp
-            productsOrderItemData.updated_at = timestamp
+            productsOrderItemData["created_at"] = timestamp
+            productsOrderItemData["updated_at"] = timestamp
             productsOrderItemsDBDataList.append(ProductsOrderItemsDB(**productsOrderItemData))
         db.add_all(productsOrderItemsDBDataList)
         db.flush()

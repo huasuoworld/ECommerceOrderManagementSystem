@@ -22,12 +22,12 @@ class ProductsOrderDB(NewBaseDB):
         db: Session,
         productsOrderModel: ProductsOrderModel,
     ) -> "ProductsOrderDB":
-        productsOrderData: ProductsOrderModel = productsOrderModel.model_dump(
-            exclude=DBExcludeColumns
+        productsOrderData = productsOrderModel.model_dump(
+            exclude=DBExcludeColumns | {"seller_id"}
         )
         timestamp = getCurrentTime()
-        productsOrderData.created_at = timestamp
-        productsOrderData.updated_at = timestamp
+        productsOrderData["created_at"] = timestamp
+        productsOrderData["updated_at"] = timestamp
         productsOrderDBData = ProductsOrderDB(**productsOrderData)
         db.add(productsOrderDBData)
         db.flush()

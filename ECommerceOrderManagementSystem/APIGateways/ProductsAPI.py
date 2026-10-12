@@ -1,9 +1,10 @@
-from fastapi import Query
+from fastapi import Query, Depends
 from ..CommonUtils import LoggingUtil
 from ..Models.ProductsModel import ProductsModel
 from ..Models.FrontEndReponseModel import SuccessResponseModel, ErrorResponseModel
-from .APIGatewayDefine import app
+from .APIGatewayDefine import app, getCurrentUser
 from ..Services.ProductsService import ProductsService
+from ..Models.UsersModel import UsersModel
 
 productService = ProductsService()
 
@@ -21,6 +22,15 @@ async def listProducts(
 ):
     LoggingUtil.logger.info("Listing all products")
     product = ProductsModel.model_construct(page_number=page_number, page_size=page_size)
+    products = productService.listProducts(product)
+    return products
+
+@app.get("/products/listProductsBySellerId")
+async def listProductsBySellerId(
+    page_number: int = Query(default=1, ge=1),
+    page_size: int = Query(default=10, ge=1), user: UsersModel = Depends(getCurrentUser)):
+    LoggingUtil.logger.info("Listing all products")
+    product = ProductsModel.model_construct(page_number=page_number, page_size=page_size, seller_id = user.id)
     products = productService.listProducts(product)
     return products
 

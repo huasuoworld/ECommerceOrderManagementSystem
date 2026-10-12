@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 class UsersBaseModel(BaseModel):
     id: int
-    seller_id: Optional[str] = None
+    seller_id: Optional[int] = None
     created_at: str
     updated_at: str
     page_number: int = 1

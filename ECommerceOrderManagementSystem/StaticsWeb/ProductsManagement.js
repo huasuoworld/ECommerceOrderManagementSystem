@@ -63,7 +63,7 @@ function loadManagedProducts() {
     );
 
     CommonUtil.request(
-        `/products/listProducts?page_number=${productsCurrentPage}&page_size=${productsPageSize}`,
+        `/products/listProductsBySellerId?page_number=${productsCurrentPage}&page_size=${productsPageSize}`,
         CommonUtil.GET
     )
         .done((response) => {

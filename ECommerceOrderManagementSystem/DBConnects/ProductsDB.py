@@ -42,9 +42,15 @@ class ProductsDB(UsersBaseDB):
     #list all products with pagination
     def listProducts(self, product: ProductsDiscountInventoryModel) -> PageDataReponseModel:
         with getDB() as db:
-            total = db.query(ProductsDB).count()
+            productsQuery = db.query(ProductsDB)
+            if product.seller_id is not None:
+                productsQuery = productsQuery.filter(
+                    ProductsDB.seller_id == product.seller_id
+                )
+
+            total = productsQuery.count()
             offset = (product.page_number - 1) * product.page_size
-            products = db.query(ProductsDB).offset(offset).limit(product.page_size).all()
+            products = productsQuery.offset(offset).limit(product.page_size).all()
         return PageDataReponseModel(
             page_number = product.page_number,
             page_size = product.page_size,
