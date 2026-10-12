@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request
 
 from ..Models.UsersModel import UsersModel
 from ..Models.FrontEndReponseModel import SuccessResponseModel, ErrorResponseModel
@@ -7,6 +7,7 @@ from ..Services.UserLoginService import UserLoginService
 from ..Services.UsersService import UsersService
 from ..CommonUtils import LoggingUtil
 from .APIGatewayDefine import app, getCurrentUser
+from ..CommonUtils.ConstantUtil import SessionId, HttpUrl
 
 # Initialize logger
 user_login_service = UserLoginService()
@@ -16,13 +17,15 @@ users_service = UsersService()
 @app.post("/users/login")
 async def login(userModel: UsersModel):
     LoggingUtil.logger.info("Login request received")
-    sessionId = user_login_service.login(userModel)
-    # TODO add cookie and session management for authenticated users
-    # Here you can implement your login logic, e.g., check the username and password against a database
-    if sessionId == None:
+    responseModel = user_login_service.login(userModel)
+    
+    if responseModel == None:
         return ErrorResponseModel()
     else:
-        return SuccessResponseModel(data = sessionId)
+        return SuccessResponseModel(
+            session_id=responseModel[SessionId],
+            http_url=responseModel.get(HttpUrl),
+        )
 
 
 @app.get("/users/me", response_model=UserProfileModel)

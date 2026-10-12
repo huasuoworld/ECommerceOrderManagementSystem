@@ -28,9 +28,13 @@ $(function () {
 
 		CommonUtil.request(CommonUtil.UsersLogin, CommonUtil.POST, userModel).done(function (response) {
 			const isAuthenticated = Number(response.status) === CommonUtil.SuccessStatusCode;
-			if (isAuthenticated && response.data) {
-				CommonUtil.set(CommonUtil.UserSessionID, response.data);
-				window.location.assign("/products");
+			if (isAuthenticated && response.session_id) {
+				CommonUtil.set(CommonUtil.UserSessionID, response.session_id);
+				if(response.http_url) {
+					window.location.assign(response.http_url);
+				} else {
+					window.location.assign("/products");
+				}
 				return;
 			}
 			$feedback

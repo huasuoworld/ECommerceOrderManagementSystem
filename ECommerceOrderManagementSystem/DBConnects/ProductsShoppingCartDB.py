@@ -43,6 +43,7 @@ class ProductsShoppingCartDB(UsersBaseDB):
         productData = productShoppingCart.model_dump(
             exclude=DBExcludeShoppingCartColumns
         )
+        productData["users_id"] = userId
         with getDB() as db:
             productDBData = db.query(ProductsShoppingCartDB).filter(
                 ProductsShoppingCartDB.users_id == userId,

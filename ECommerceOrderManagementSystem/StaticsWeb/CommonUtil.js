@@ -15,6 +15,8 @@
         ProductsOrderConfirmURL: "/order/confirm",
         ProductsOrderPaymentURL: "/productsOrderPayment/pay",
         UsersLogin: "/users/login",
+        UsersManagementListUsersURL: "/management/users/listUsers",
+        ProductsManagementListProductsURL: "/products/listProductsBySellerId",
         USER_STATUS: {
             ACTIVE: 1,
             INACTIVE: 0

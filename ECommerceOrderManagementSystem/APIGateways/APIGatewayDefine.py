@@ -4,8 +4,11 @@ from fastapi.staticfiles import StaticFiles
 from ..CommonUtils.ConstantUtil import UserSessionID, PermissionErrorCode
 from ..CommonUtils.LoggingUtil import logger
 from ..Models.UsersModel import UsersModel
-from ..CommonUtils.ConstantUtil import STATIC_WEB_DIR, PathWhiteList, StaticPath
+from ..CommonUtils.ConstantUtil import STATIC_WEB_DIR, PathWhiteList, StaticPath, AdminPathWhiteList, SellerPathWhiteList, AdminPermission, SellerPermission
 from ..RedisCache.RedisConnect import getSessionCache
+from ..Services.PermissionValidationService import PermissionValidationService
+
+permissionValidationService = PermissionValidationService()
 
 app = FastAPI(title="My API", version="1.0.0")
 app.mount("/static", StaticFiles(directory=STATIC_WEB_DIR), name="static")
@@ -47,8 +50,18 @@ async def permissionCheck(request: Request, call_next):
     if not userSessionID:
         logger.info("Unauthenticated request redirected to login: %s", requestPath)
         return RedirectResponse("/login", status_code=PermissionErrorCode)
-
-    return await call_next(request)
+    user = getCurrentUser(request)
+    hasPermission: bool = True
+    if requestPath in AdminPathWhiteList:
+        hasPermission = permissionValidationService.hasPermission(user.id, AdminPermission)
+    elif requestPath in SellerPathWhiteList:
+        hasPermission = permissionValidationService.hasPermission(user.id, SellerPermission)
+   
+    if hasPermission:
+        return await call_next(request)
+    else:
+        logger.info("Unauthenticated request redirected to login: %s", requestPath)
+        return RedirectResponse("/login", status_code=PermissionErrorCode)
 
 
 def getCurrentUser(request: Request) -> UsersModel:

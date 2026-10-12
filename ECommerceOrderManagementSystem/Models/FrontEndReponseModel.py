@@ -9,6 +9,8 @@ T = TypeVar('T')
 class SuccessResponseModel(BaseModel):
     status: int = SuccessStatusCode
     message: str = SuccessMessage
+    http_url: Optional[str] = None
+    session_id: Optional[str] = None
     data: Optional[T] = None
 
 class ErrorResponseModel(BaseModel):
