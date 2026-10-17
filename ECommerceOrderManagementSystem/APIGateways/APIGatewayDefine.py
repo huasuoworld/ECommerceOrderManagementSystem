@@ -1,17 +1,38 @@
-from fastapi import FastAPI, Request, HTTPException
+import uvicorn
+from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from ..CommonUtils.ConstantUtil import UserSessionID, PermissionErrorCode
 from ..CommonUtils.LoggingUtil import logger
 from ..Models.UsersModel import UsersModel
-from ..CommonUtils.ConstantUtil import STATIC_WEB_DIR, PathWhiteList, StaticPath, AdminPathWhiteList, SellerPathWhiteList, AdminPermission, SellerPermission
+from ..Models.UsersPermissionRulesModel import UsersPermissionRulesModel
+from ..CommonUtils.ConstantUtil import STATIC_WEB_DIR, PathWhiteList, StaticPath, AdminPathWhiteList, SellerPathWhiteList, AdminPermission, SellerPermission, DoNotHavePermissionErrorCode, DoNotHavePermissionErrorMessage
 from ..RedisCache.RedisConnect import getSessionCache
 from ..Services.PermissionValidationService import PermissionValidationService
+from ..Models.FrontEndReponseModel import ErrorResponseModel, ErrorResponseException
+from ..CommonUtils.LoggingUtil import logger
 
 permissionValidationService = PermissionValidationService()
 
 app = FastAPI(title="My API", version="1.0.0")
 app.mount("/static", StaticFiles(directory=STATIC_WEB_DIR), name="static")
+
+
+def errorResponse(error: ErrorResponseException) -> JSONResponse:
+    body = ErrorResponseModel(
+        status = error.status,
+        message = error.message,
+        error_code = error.error_code,
+        details = error.details,
+    ).model_dump()
+    return JSONResponse(status_code = error.status, content = body)
+
+
+@app.exception_handler(ErrorResponseException)
+async def handleErrorResponse(request: Request, error: ErrorResponseException) -> JSONResponse:
+    return errorResponse(error)
+
 
 # Define the login web page endpoint
 @app.get("/", include_in_schema=False)
@@ -50,23 +71,27 @@ async def permissionCheck(request: Request, call_next):
     if not userSessionID:
         logger.info("Unauthenticated request redirected to login: %s", requestPath)
         return RedirectResponse("/login", status_code=PermissionErrorCode)
-    user = getCurrentUser(request)
-    hasPermission: bool = True
-    if requestPath in AdminPathWhiteList:
-        hasPermission = permissionValidationService.hasPermission(user.id, AdminPermission)
-    elif requestPath in SellerPathWhiteList:
-        hasPermission = permissionValidationService.hasPermission(user.id, SellerPermission)
-   
-    if hasPermission:
-        return await call_next(request)
-    else:
-        logger.info("Unauthenticated request redirected to login: %s", requestPath)
-        return RedirectResponse("/login", status_code=PermissionErrorCode)
+    try:
+        user = getCurrentUser(request)
+        hasPermission: bool = True
 
+        permissionValidationList = permissionValidationService.getUserPermission(user.id)
+        #if hasPermission then pass then throw exception
+        hasPermission = permissionValidationService.hasPermissionByList(requestPath, permissionValidationList)
+        logger.info("Unauthenticated request, hasPermission: %s", hasPermission)
+        if hasPermission:
+            return await call_next(request)
+
+        raise ErrorResponseException(status = DoNotHavePermissionErrorCode, message = DoNotHavePermissionErrorMessage)
+    except ErrorResponseException as error:
+        return errorResponse(error)
 
 def getCurrentUser(request: Request) -> UsersModel:
     sessionId = request.cookies.get(UserSessionID)
     user = getSessionCache(sessionId) if sessionId else None
     if user is None:
-        raise HTTPException(status_code=401, detail="Authentication required")
+        raise ErrorResponseException(status = DoNotHavePermissionErrorCode, message = DoNotHavePermissionErrorMessage)
     return user
+
+if __name__ == "__main__":
+  uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

@@ -3,11 +3,14 @@ from ..Models.UsersModel import UsersModel
 from ..CommonUtils.LoggingUtil import logger
 from ..RedisCache.RedisConnect import setSessionCache
 import uuid
-from ..CommonUtils.ConstantUtil import AdminPathWhiteList, SellerPathWhiteList, HttpUrl, AdminPermission, SellerPermission, UsersManagementURL, ProductsManagementURL, SessionId
+from ..CommonUtils.ConstantUtil import HttpUrl, SessionId, BuyerHomePageURL
 from ..DBConnects.UsersPermissionRulesDB import UsersPermissionRulesDB
+from ..CommonUtils.LoggingUtil import logger
+from ..Services.PermissionValidationService import PermissionValidationService
 
 userDB = UsersDB()
 usersPermissionRulesDB = UsersPermissionRulesDB()
+permissionValidationService = PermissionValidationService()
 
 class UserLoginService(object):
     def login(self, usersModel: UsersModel):
@@ -20,10 +23,9 @@ class UserLoginService(object):
             usersPermissionRulesList = usersPermissionRulesDB.getPermissionByUserId(user.id)
             if usersPermissionRulesList is None:
                 return None
-            subjectPathList = [usersPermissionRules.permission_subject_path for usersPermissionRules in usersPermissionRulesList]
-            if AdminPermission in subjectPathList:
-                responseModel[HttpUrl] = UsersManagementURL
-            elif SellerPermission in subjectPathList:
-                responseModel[HttpUrl] = ProductsManagementURL
+            subjectPathList = [permissionValidationService.hasPermission(None, usersPermissionRules) for usersPermissionRules in usersPermissionRulesList]
+            homePage = next(iter(subjectPathList), BuyerHomePageURL)
+            logger.info("homePage = %s", homePage)
+            responseModel[HttpUrl] = homePage
             return responseModel
         return None

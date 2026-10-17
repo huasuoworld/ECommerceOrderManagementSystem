@@ -11,7 +11,5 @@ class UsersService:
     def getUserProfile(self, userId: int) -> Optional[UserProfileModel]:
         return self.usersDB.queryUserProfileById(userId)
 
-    def listUsers(
-        self, userProfile: UserProfileModel
-    ) -> PageDataReponseModel[UserProfileModel]:
+    def listUsers(self, userProfile: UserProfileModel) -> PageDataReponseModel[UserProfileModel]:
         return self.usersDB.listUsers(userProfile)

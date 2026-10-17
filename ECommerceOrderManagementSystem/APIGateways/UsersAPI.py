@@ -1,26 +1,26 @@
-from fastapi import Depends, HTTPException, Request
+from fastapi import Depends
 
 from ..Models.UsersModel import UsersModel
-from ..Models.FrontEndReponseModel import SuccessResponseModel, ErrorResponseModel
+from ..Models.FrontEndReponseModel import SuccessResponseModel, ErrorResponseException
 from ..Models.UserProfileModel import UserProfileModel
 from ..Services.UserLoginService import UserLoginService
 from ..Services.UsersService import UsersService
 from ..CommonUtils import LoggingUtil
 from .APIGatewayDefine import app, getCurrentUser
-from ..CommonUtils.ConstantUtil import SessionId, HttpUrl
+from ..CommonUtils.ConstantUtil import SessionId, HttpUrl, DoNotHavePermissionErrorCode, DoNotHavePermissionErrorMessage, CouldNotFindUserErrorMessage
 
 # Initialize logger
-user_login_service = UserLoginService()
-users_service = UsersService()
+userLoginService = UserLoginService()
+usersService = UsersService()
 
 # Define the login endpoint
 @app.post("/users/login")
 async def login(userModel: UsersModel):
     LoggingUtil.logger.info("Login request received")
-    responseModel = user_login_service.login(userModel)
+    responseModel = userLoginService.login(userModel)
     
     if responseModel == None:
-        return ErrorResponseModel()
+        raise ErrorResponseException(status = DoNotHavePermissionErrorCode, message = DoNotHavePermissionErrorMessage)
     else:
         return SuccessResponseModel(
             session_id=responseModel[SessionId],
@@ -31,8 +31,8 @@ async def login(userModel: UsersModel):
 @app.get("/users/me", response_model=UserProfileModel)
 async def getCurrentUserProfile(user: UsersModel = Depends(getCurrentUser)):
     if user.id is None:
-        raise HTTPException(status_code=401, detail="Authentication required")
-    userProfile = users_service.getUserProfile(user.id)
+        raise ErrorResponseException(status = DoNotHavePermissionErrorCode, message = CouldNotFindUserErrorMessage)
+    userProfile = usersService.getUserProfile(user.id)
     if userProfile is None:
-        raise HTTPException(status_code=404, detail="User profile not found")
+        raise ErrorResponseException(status = DoNotHavePermissionErrorCode, message = CouldNotFindUserErrorMessage)
     return userProfile

@@ -1,3 +1,5 @@
+.venv/bin/python -c 'import importlib,sys,uvicorn; package=importlib.import_module("ECommerceOrderManagementSystem.DBConnects"); sys.modules["DBConnects"]=package; users_db=importlib.import_module("ECommerceOrderManagementSystem.DBConnects.UsersDB"); sys.modules["DBConnects.UsersDB"]=users_db; permission_db=importlib.import_module("ECommerceOrderManagementSystem.DBConnects.UsersPermissionRulesDB"); sys.modules["DBConnects.UsersPermissionRulesDB"]=permission_db; uvicorn.run("ECommerceOrderManagementSystem.APIGateways.Application:app", host="127.0.0.1", port=8000)'
+
 Project Theme:	
 	ECommerceOrderManagementSystem
 	E-Commerce Order Management System 	Model user roles (buyer, seller, admin), 

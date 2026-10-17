@@ -1,8 +1,9 @@
-from fastapi import Depends, HTTPException
+from fastapi import Depends
 
 from ..Services.ProductsOrderService import ProductsOrderService
 from .APIGatewayDefine import app, getCurrentUser
 from ..Models.UsersModel import UsersModel
+from ..Models.FrontEndReponseModel import ErrorResponseModel
 
 productsOrderService = ProductsOrderService()
 
@@ -15,4 +16,4 @@ async def confirmOrder(user: UsersModel = Depends(getCurrentUser)):
     try:
         return productsOrderService.confirmOrderByUserShoppingCart(user.id)
     except ValueError as error:
-        raise HTTPException(status_code=400, detail=str(error)) from error
+        raise ErrorResponseModel(status_code=400, detail=str(error)) from error
