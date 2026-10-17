@@ -1,7 +1,7 @@
 from fastapi import Query, Depends
 from ..CommonUtils import LoggingUtil
 from ..Models.ProductsModel import ProductsModel
-from ..Models.FrontEndReponseModel import SuccessResponseModel, ErrorResponseModel
+from ..Models.FrontEndReponseModel import SuccessResponseModel, ErrorResponseException
 from .APIGatewayDefine import app, getCurrentUser
 from ..Services.ProductsService import ProductsService
 from ..Models.UsersModel import UsersModel
@@ -39,11 +39,11 @@ async def getProduct(productID: int):
     LoggingUtil.logger.info(f"Fetching product with ID: {productID}")
     # Validate the productID
     if productID <= 0 or productID > 1000000 or productID is None:
-        return ErrorResponseModel(message="Invalid product ID", error_code=400)
+        raise ErrorResponseException(message="Invalid product ID", status=400)
     # Here you can implement your logic to fetch the product from a database
     # For demonstration, let's assume we have a function `get_product_by_id`
     product = productService.getProductById(productID)
     if product:
         return SuccessResponseModel(data=product)
     else:
-        return ErrorResponseModel(message="Product not found", error_code=404)
+        raise ErrorResponseException(message="Product not found", status=404)

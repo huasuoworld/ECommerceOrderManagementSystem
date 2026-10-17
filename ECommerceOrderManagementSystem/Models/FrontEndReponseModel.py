@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from ..CommonUtils.ConstantUtil import SuccessStatusCode, ErrorStatusCode, SuccessMessage, ErrorMessage
 from fastapi.responses import FileResponse
-from typing import Optional, TypeVar, Generic, List
+from typing import Optional, TypeVar, Generic, List, Union
 from ..Models.NewBaseModel import NewBaseModel
 
 T = TypeVar('T')
@@ -13,11 +13,26 @@ class SuccessResponseModel(BaseModel):
     session_id: Optional[str] = None
     data: Optional[T] = None
 
+class ErrorResponseException(Exception):
+    def __init__(
+        self,
+        status: Union[int, str] = ErrorStatusCode,
+        message: str = ErrorMessage,
+        error_code: Optional[int] = None,
+        details: Optional[dict] = None,
+    ):
+        self.status = int(status)
+        self.message = message
+        self.error_code = error_code
+        self.details = details
+        super().__init__(message)
+
+
 class ErrorResponseModel(BaseModel):
     status: int = ErrorStatusCode
     message: str = ErrorMessage
-    error_code: int = None
-    details: dict = None
+    error_code: Optional[int] = None
+    details: Optional[dict] = None
 
 class FileResponseModel(FileResponse):
     def __init__(self, path: str, filename: str = None, media_type: str = None, headers: dict = None):

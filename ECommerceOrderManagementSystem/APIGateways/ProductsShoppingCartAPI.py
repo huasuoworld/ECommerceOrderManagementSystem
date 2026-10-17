@@ -1,9 +1,10 @@
-from fastapi import Depends, HTTPException
+from fastapi import Depends
 from pydantic import BaseModel, Field
 
 from ..Services.ShoppingCartService import ShoppingCartService
 from .APIGatewayDefine import app, getCurrentUser
 from ..Models.UsersModel import UsersModel
+from ..Models.FrontEndReponseModel import ErrorResponseModel
 
 shoppingCartService = ShoppingCartService()
 
@@ -29,7 +30,7 @@ async def addShoppingCartItem(
     try:
         return shoppingCartService.addItem(user.id, request.product_id, request.quantity)
     except KeyError as error:
-        raise HTTPException(status_code=404, detail="Product not found") from error
+        raise ErrorResponseModel(status_code=404, detail="Product not found") from error
 
 
 @app.patch("/shoppingCart/items/{product_id}")
@@ -41,7 +42,7 @@ async def updateShoppingCartItem(
     try:
         return shoppingCartService.updateQuantity(user.id, product_id, request.quantity)
     except KeyError as error:
-        raise HTTPException(status_code=404, detail="Cart item not found") from error
+        raise ErrorResponseModel(status_code=404, detail="Cart item not found") from error
 
 
 @app.delete("/shoppingCart/items/{product_id}")
@@ -52,4 +53,4 @@ async def removeShoppingCartItem(
     try:
         return shoppingCartService.removeItem(user.id, product_id)
     except KeyError as error:
-        raise HTTPException(status_code=404, detail="Cart item not found") from error
+        raise ErrorResponseModel(status_code=404, detail="Cart item not found") from error

@@ -6,6 +6,10 @@ STATIC_WEB_DIR = Path(__file__).resolve().parent.parent / "StaticsWeb"
 SuccessStatusCode = 200
 ErrorStatusCode = 400
 PermissionErrorCode = 303
+DoNotHavePermissionErrorCode = 401
+DoNotHavePermissionErrorMessage = "Unauthenticated request"
+CouldNotFindUserErrorCode = "404"
+CouldNotFindUserErrorMessage = "Could not find the user's profile"
 
 StaticPath = "/static/"
 
@@ -15,10 +19,13 @@ ErrorMessage = "Error"
 UserSessionID = "userSessionID"
 
 PathWhiteList = ["/", "/login", "/users/login"]
-AdminPathWhiteList = ["/management/users/listUsers", "/usersManagement"]
-SellerPathWhiteList = ["/products/listProductsBySellerId", "/productsManagement"]
-UsersManagementURL = "/usersManagement"
-ProductsManagementURL = "/productsManagement"
+BuyerPathWhiteList = ["/products", "/products/listProducts", "/order", "/order/confirm", "/shoppingCart", "/shoppingCart/items", "/shoppingCart/items", "/users/me"]
+AdminPathWhiteList = BuyerPathWhiteList + ["/management/users/listUsers", "/usersManagement", "/management/users/active", "/management/users/inactive"]
+SellerPathWhiteList = BuyerPathWhiteList + ["/products/listProductsBySellerId", "/productsManagement", "/products/listProductsBySellerId", "/productsOrder"]
+
+AdminHomePageURL = "/usersManagement"
+SellerHomePageURL = "/productsManagement"
+BuyerHomePageURL = "/products"
 AdminPermission = "/admin"
 SellerPermission = "/seller"
 BuyerPermission = "/buyer"
@@ -38,6 +45,12 @@ OrderStatusShipped = "Shipped"
 OrderStatusCompleted = "Completed"
 OrderStatusCancelled = "Cancelled"
 OrderStatusRefunded = "Refunded"
+
+UserStatusActive = "active"
+UserStatusInactive = "inactive"
+
+PermissionStatusActive = "active"
+PermissionStatusInactive = "inactive"
 
 DBExcludeColumns = {"id", "page_number", "page_size"}
 DBExcludeShoppingCartColumns = DBExcludeColumns | {

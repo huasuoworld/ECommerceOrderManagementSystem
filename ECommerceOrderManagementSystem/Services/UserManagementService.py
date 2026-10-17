@@ -1,32 +1,37 @@
-from DBConnects.SQLiteDB import engine, SessionLocal
+from typing import Optional
 from DBConnects.UsersDB import UsersDB
-from datetime import datetime
+from DBConnects.UsersPermissionRulesDB import UsersPermissionRulesDB
+from ..Models.UserProfileModel import UserProfileModel
+from ..Models.FrontEndReponseModel import PageDataReponseModel, SuccessResponseModel
+from ..Models.UsersPermissionRulesModel import UsersPermissionRulesModel
+from ..CommonUtils.ConstantUtil import PermissionStatusActive, PermissionStatusInactive, UserStatusInactive, UserStatusActive
 
-class UserLoginService(object):
+class UserManagementService:
     def __init__(self):
-        self.db = SessionLocal()
+        self.usersDB = UsersDB()
+        self.usersPermissionRulesDB = UsersPermissionRulesDB()
 
-    def create_user(self, username: str, password: str, display_name: str, user_email: str, user_phone: str, user_status: str) -> UsersDB:
-        try:
-            # 测试插入用户
-            new_user = self.db.query(UsersDB).filter_by(username=username).first()
-            if new_user is None:
-                new_user = UsersDB(
-                    username=username,
-                    password=password,
-                    display_name=display_name,
-                    user_email=user_email,
-                    user_phone=user_phone,
-                    user_status=user_status,
-                    created_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    updated_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                )
-                self.db.add(new_user)
-                self.db.commit()
-                self.db.refresh(new_user)
+    def getUserProfile(self, userId: int) -> Optional[UserProfileModel]:
+            return self.usersDB.queryUserProfileById(userId)
     
-            print(f"users ID={new_user.id}, Name={new_user.username}")
-            return new_user    
-        finally:
-            self.db.close()
+    def listUsers(self, userProfile: UserProfileModel) -> PageDataReponseModel[UserProfileModel]:
+        return self.usersDB.listUsers(userProfile)
+
+    def updateUser(self, userProfileModel: UserProfileModel):
+        #1. update user_status
+        user = self.usersDB.updateUser(userProfileModel)
+        if user == None:
+            return None
+        #2. update permission_status
+        usersPermissionRulesModel = UsersPermissionRulesModel.model_construct(users_id = userProfileModel.id)
+        if userProfileModel.user_status == UserStatusActive:
+            usersPermissionRulesModel.permission_status = PermissionStatusActive
+        elif userProfileModel.user_status == UserStatusInactive:
+            usersPermissionRulesModel.permission_status = PermissionStatusInactive
+        else:
+            return None
+        usersPermissionRules = self.usersPermissionRulesDB.updatePermission(usersPermissionRulesModel)
+        if usersPermissionRules == None:
+            return None
+        return SuccessResponseModel()
         

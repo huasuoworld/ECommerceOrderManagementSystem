@@ -4,6 +4,7 @@ from ..Models.UsersModel import UsersModel
 from .NewBaseDB import NewBaseDB
 from ..Models.UserProfileModel import UserProfileModel
 from ..Models.FrontEndReponseModel import PageDataReponseModel
+from ..CommonUtils.ConstantUtil import getCurrentTime
 
 class UsersDB(NewBaseDB):
     __tablename__ = 'users'
@@ -27,12 +28,11 @@ class UsersDB(NewBaseDB):
                 return None
             return UserProfileModel.model_validate(user)
 
-    def listUsers(
-        self, userProfile: UserProfileModel
-    ) -> PageDataReponseModel[UserProfileModel]:
+    def listUsers(self, userProfile: UserProfileModel) -> PageDataReponseModel[UserProfileModel]:
         with getDB() as db:
             total = db.query(UsersDB).count()
             offset = (userProfile.page_number - 1) * userProfile.page_size
+            #Query user information without password
             usersDBData = db.query(
                 UsersDB.id,
                 UsersDB.username,
@@ -53,3 +53,14 @@ class UsersDB(NewBaseDB):
                     for user in usersDBData
                 ],
             )
+
+    def updateUser(self, userProfile: UserProfileModel):
+            with getDB() as db:
+                user = db.query(UsersDB).filter(UsersDB.id == userProfile.id).first()
+                if user is None:
+                    return None
+                timestamp = getCurrentTime()
+                user.user_status = userProfile.user_status
+                user.updated_at = timestamp
+                db.commit()
+                return user

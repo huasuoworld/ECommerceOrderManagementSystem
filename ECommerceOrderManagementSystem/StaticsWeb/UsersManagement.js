@@ -12,7 +12,7 @@ function loadUsers() {
     $("#users-message").addClass("d-none").removeClass("alert-danger alert-warning").text("");
     $("#users-list").empty().append(
         $("<tr>").append($("<td>", {
-            colspan: 6,
+            colspan: 7,
             class: "text-center text-secondary py-5"
         }).text("Loading users…"))
     );
@@ -31,7 +31,7 @@ function loadUsers() {
             if (users.length === 0) {
                 $("#users-list").append(
                     $("<tr>").append($("<td>", {
-                        colspan: 6,
+                        colspan: 7,
                         class: "text-center text-secondary py-5"
                     }).text("No users found."))
                 );
@@ -41,6 +41,10 @@ function loadUsers() {
             }
 
             users.forEach((user) => {
+                const isActive = user.user_status === "active";
+                const actionStatus = isActive ? "inactive" : "active";
+                const actionLabel = isActive ? "Disable" : "Activate";
+                const actionClass = isActive ? "btn-outline-danger" : "btn-outline-success";
                 $("#users-list").append(
                     $("<tr>").append(
                         $("<td>").text(userProfileValue(user.username)),
@@ -48,10 +52,21 @@ function loadUsers() {
                         $("<td>").text(userProfileValue(user.user_email)),
                         $("<td>").text(userProfileValue(user.user_phone)),
                         $("<td>").append(
-                            $("<span>", { class: "badge text-bg-secondary" })
+                            $("<span>", {
+                                class: `badge ${isActive ? "text-bg-success" : "text-bg-secondary"}`
+                            })
                                 .text(userProfileValue(user.user_status))
                         ),
-                        $("<td>").text(userProfileValue(user.created_at))
+                        $("<td>").text(userProfileValue(user.created_at)),
+                        $("<td>").append(
+                            $("<button>", {
+                                type: "button",
+                                class: `btn btn-sm ${actionClass}`,
+                                text: actionLabel
+                            })
+                                .attr("data-user-id", user.id)
+                                .attr("data-user-status", actionStatus)
+                        )
                     )
                 );
             });
@@ -64,7 +79,7 @@ function loadUsers() {
             $("#users-count").text("");
             $("#users-list").empty().append(
                 $("<tr>").append($("<td>", {
-                    colspan: 6,
+                    colspan: 7,
                     class: "text-center text-danger py-5"
                 }).text("Unable to load users. Please try again."))
             );
@@ -82,6 +97,41 @@ function loadUsers() {
                 );
         })
         .always(() => $refreshButton.prop("disabled", false));
+}
+
+function updateUserStatus(userId, userStatus, $button) {
+    const url = userStatus === "active"
+        ? CommonUtil.UsersManagementActiveUserURL
+        : CommonUtil.UsersManagementInactiveUserURL;
+    const actionLabel = userStatus === "active" ? "activate" : "disable";
+    $button.prop("disabled", true);
+    $("#users-message").addClass("d-none").removeClass("alert-danger alert-warning").text("");
+
+    CommonUtil.request(`${url}?userId=${encodeURIComponent(userId)}`, CommonUtil.PATCH)
+        .done((response) => {
+            if (response.status !== CommonUtil.SuccessStatusCode) {
+                $button.prop("disabled", false);
+                $("#users-message")
+                    .removeClass("d-none")
+                    .addClass("alert-danger")
+                    .text(response.message || `Unable to ${actionLabel} this user.`);
+                return;
+            }
+            loadUsers();
+        })
+        .fail((xhr) => {
+            $button.prop("disabled", false);
+            $("#users-message")
+                .removeClass("d-none")
+                .addClass(xhr.status === 403 ? "alert-warning" : "alert-danger")
+                .text(
+                    xhr.status === 401
+                        ? "Your session has expired. Please sign in again."
+                        : xhr.status === 403
+                        ? "Administrator permission is required to update user status."
+                        : xhr.responseJSON?.detail || `Unable to ${actionLabel} this user. Please try again.`
+                );
+        });
 }
 
 function renderUsersPagination() {
@@ -115,6 +165,13 @@ function makeUsersPageButton(label, page, disabled, active = false) {
 $(function () {
     loadUsers();
     $("#refresh-users").on("click", loadUsers);
+    $("#users-list").on("click", "[data-user-status]", function () {
+        updateUserStatus(
+            $(this).attr("data-user-id"),
+            $(this).attr("data-user-status"),
+            $(this)
+        );
+    });
     $("#users-pagination").on("click", "[data-page]", function () {
         const page = Number($(this).attr("data-page"));
         if (page >= 1 && page <= usersTotalPages && page !== usersCurrentPage) {
