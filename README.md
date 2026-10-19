@@ -1,4 +1,4 @@
-.venv/bin/python -c 'import importlib,sys,uvicorn; package=importlib.import_module("ECommerceOrderManagementSystem.DBConnects"); sys.modules["DBConnects"]=package; users_db=importlib.import_module("ECommerceOrderManagementSystem.DBConnects.UsersDB"); sys.modules["DBConnects.UsersDB"]=users_db; permission_db=importlib.import_module("ECommerceOrderManagementSystem.DBConnects.UsersPermissionRulesDB"); sys.modules["DBConnects.UsersPermissionRulesDB"]=permission_db; uvicorn.run("ECommerceOrderManagementSystem.APIGateways.Application:app", host="127.0.0.1", port=8000)'
+Run `python main.py` from the project root to start the API at `http://127.0.0.1:8000`. In VS Code, select the project's Python interpreter and start debugging `main.py`.
 
 Project Theme:	
 	ECommerceOrderManagementSystem
