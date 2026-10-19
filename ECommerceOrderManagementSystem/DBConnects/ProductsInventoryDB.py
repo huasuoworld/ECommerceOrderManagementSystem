@@ -1,9 +1,12 @@
-from sqlalchemy import create_engine, Column, Integer, String
+from typing import List
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import Session
 from .UsersBaseDB import UsersBaseDB
 from .SQLiteDB import getDB
-from ..Models.FrontEndReponseModel import PageDataReponseModel
+from ..Models.FrontEndReponseModel import PageDataReponseModel, ErrorResponseException
 from ..Models.ProductsInventoryModel import ProductsInventoryModel
-from typing import List
+from ..CommonUtils.ConstantUtil import InsufficientAvailableStockError, InsufficientAvailableStockMessage, InsufficientInventoryStockError, InsufficientInventoryStockMessage, InsufficientReservedStockError, InsufficientReservedStockMessage, getCurrentTime
+
 
 class ProductsInventoryDB(UsersBaseDB):
     __tablename__ = 'products_inventory'
@@ -57,5 +60,50 @@ class ProductsInventoryDB(UsersBaseDB):
         with getDB() as db:
             productsInventoryList = db.query(ProductsInventoryDB).filter(ProductsInventoryDB.product_id.in_(productIDs), ProductsInventoryDB.inventory_available_stock > 0).all()
         return PageDataReponseModel(
-            items=[ProductsInventoryModel.model_validate(item) for item in productsInventoryList]
-        )
+            items=[ProductsInventoryModel.model_validate(item) for item in productsInventoryList])
+
+    def getProductInventoryByProductIdWithSession(self, db: Session, productId):
+        return db.query(ProductsInventoryDB).filter(ProductsInventoryDB.product_id == productId).first()
+
+    #update inventory after order was confirmed
+    def lockStockWithSession(self, db: Session, productId: int, numberOfReservedStock: int):
+        #1. find the inventory
+        productInventory = db.query(ProductsInventoryDB).filter(ProductsInventoryDB.product_id == productId).first()
+        #if stock is not available then throw exception
+        if numberOfReservedStock > productInventory.inventory_available_stock:
+            raise ErrorResponseException(InsufficientAvailableStockError, InsufficientAvailableStockMessage)
+        #2. reduce available stock
+        productInventory.inventory_available_stock = productInventory.inventory_available_stock - numberOfReservedStock
+        #3. increase reserved stock
+        productInventory.inventory_reserved_stock = productInventory.inventory_reserved_stock + numberOfReservedStock
+        productInventory.updated_at = getCurrentTime()
+        return productInventory
+
+    #update inventory after payment
+    def releaseReservedStockWithSession(self, db: Session, productId: int, numberOfReservedStock: int):
+        #1. find the inventory
+        productInventory = db.query(ProductsInventoryDB).filter(ProductsInventoryDB.product_id == productId).first()
+        #if stock is not available then throw exception
+        if numberOfReservedStock > productInventory.inventory_available_stock:
+            raise ErrorResponseException(InsufficientAvailableStockError, InsufficientAvailableStockMessage)
+        elif numberOfReservedStock > productInventory.inventory_stock:
+            raise ErrorResponseException(InsufficientInventoryStockError, InsufficientInventoryStockMessage)
+        #2. reduce reserved stock
+        productInventory.inventory_reserved_stock = productInventory.inventory_reserved_stock - numberOfReservedStock
+        #3. reduce inventory stock
+        productInventory.inventory_stock = productInventory.inventory_stock - numberOfReservedStock
+        productInventory.updated_at = getCurrentTime()
+        return productInventory
+
+    #update inventory after order was canceled
+    def releaseStockWithSession(self, db: Session, productId: int, numberOfReservedStock: int):
+        #1. find the inventory
+        productInventory = db.query(ProductsInventoryDB).filter(ProductsInventoryDB.product_id == productId).first()
+        if numberOfReservedStock > productInventory.inventory_reserved_stock:
+            raise ErrorResponseException(InsufficientReservedStockError, InsufficientReservedStockMessage)
+        #2. reduce reserved stock
+        productInventory.inventory_reserved_stock = productInventory.inventory_reserved_stock - numberOfReservedStock
+        #3. increase available stock
+        productInventory.inventory_available_stock = productInventory.inventory_available_stock + numberOfReservedStock
+        productInventory.updated_at = getCurrentTime()
+        return productInventory

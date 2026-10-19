@@ -7,9 +7,19 @@ SuccessStatusCode = 200
 ErrorStatusCode = 400
 PermissionErrorCode = 303
 DoNotHavePermissionErrorCode = 401
+ShoppingCartNoDataErrorCode = 601
+InsufficientAvailableStockError = 701
+InsufficientReservedStockError = 702
+InsufficientInventoryStockError = 703
+ProductIdIsNoneErrorCode = 801
 DoNotHavePermissionErrorMessage = "Unauthenticated request"
 CouldNotFindUserErrorCode = "404"
 CouldNotFindUserErrorMessage = "Could not find the user's profile"
+ShoppingCartNoDataErrorMessage = "There's no data in the shipping cart"
+InsufficientAvailableStockMessage = "Insufficient available stock"
+InsufficientReservedStockMessage = "Insufficient reserved stock"
+InsufficientInventoryStockMessage = "Insufficient inventory stock"
+ProductIdIsNoneErrorMessage = "Product id is null"
 
 StaticPath = "/static/"
 
@@ -33,6 +43,7 @@ HttpUrl = "http_url"
 SessionId = "sessionId"
 
 OrderPrefix = "ORD-"
+PaymentPrefix = "PAY-"
 
 PaymentStatusUnpaid = "Unpaid"
 PaymentStatusPaying = "Paying"
@@ -52,6 +63,7 @@ UserStatusInactive = "inactive"
 PermissionStatusActive = "active"
 PermissionStatusInactive = "inactive"
 
+DBExcludeColumnsWithoutId = {"page_number", "page_size", "seller_id"}
 DBExcludeColumns = {"id", "page_number", "page_size"}
 DBExcludeShoppingCartColumns = DBExcludeColumns | {
     "users_id",
@@ -67,3 +79,6 @@ def getUUID4():
 
 def getOrderNumber():
     return OrderPrefix + str(uuid.uuid4())
+
+def getPaymentNumber():
+    return PaymentPrefix + str(uuid.uuid4())

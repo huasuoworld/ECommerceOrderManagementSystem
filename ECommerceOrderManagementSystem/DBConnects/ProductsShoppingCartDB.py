@@ -4,7 +4,8 @@ from typing import Optional
 from .SQLiteDB import getDB
 from .UsersBaseDB import UsersBaseDB
 from ..Models.ProductsShoppingCartModel import ProductsShoppingCartModel
-from ..CommonUtils.ConstantUtil import DBExcludeShoppingCartColumns, getCurrentTime
+from ..CommonUtils.ConstantUtil import DBExcludeShoppingCartColumns, getCurrentTime, ShoppingCartNoDataErrorCode, ShoppingCartNoDataErrorMessage
+from ..Models.FrontEndReponseModel import ErrorResponseException
 
 class ProductsShoppingCartDB(UsersBaseDB):
     __tablename__ = 'products_shopping_cart'
@@ -68,10 +69,9 @@ class ProductsShoppingCartDB(UsersBaseDB):
         with getDB() as db:
             productDBData = db.query(ProductsShoppingCartDB).filter(ProductsShoppingCartDB.users_id == userId, ProductsShoppingCartDB.product_id == productId).first()
             if productDBData is None:
-                raise KeyError(productId)
-            timestamp = getCurrentTime()
+                raise ErrorResponseException(ShoppingCartNoDataErrorCode, ShoppingCartNoDataErrorMessage)
             productDBData.products_quantity = quantity
-            productDBData.updated_at = timestamp
+            productDBData.updated_at = getCurrentTime()
             db.commit()
             products = db.query(ProductsShoppingCartDB).filter(ProductsShoppingCartDB.users_id == userId).all()
         return products
@@ -81,7 +81,7 @@ class ProductsShoppingCartDB(UsersBaseDB):
         with getDB() as db:
             productDBData = db.query(ProductsShoppingCartDB).filter(ProductsShoppingCartDB.users_id == userId, ProductsShoppingCartDB.product_id == productID).first()
             if productDBData is None:
-                raise KeyError(productID)
+                raise ErrorResponseException(ShoppingCartNoDataErrorCode, ShoppingCartNoDataErrorMessage)
             db.delete(productDBData)
             db.commit()
             products = db.query(ProductsShoppingCartDB).filter(ProductsShoppingCartDB.users_id == userId).all()
