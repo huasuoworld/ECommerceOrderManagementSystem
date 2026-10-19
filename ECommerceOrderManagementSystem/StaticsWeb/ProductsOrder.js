@@ -1,6 +1,7 @@
 const orderFormatPrice = (price) => `CA$${Number(price || 0).toLocaleString("en-CA")}`;
 let checkoutCart = null;
 let checkoutConfirmed = false;
+let checkoutOrderId = null;
 
 function orderTextElement(tagName, className, text) {
     return $("<" + tagName + ">").addClass(className).text(text ?? "");
@@ -45,6 +46,7 @@ function loadCheckout() {
         .append(orderTextElement("p", "text-secondary", "Loading your cart..."));
     $("#checkout-confirmation").addClass("d-none").empty();
     checkoutConfirmed = false;
+    checkoutOrderId = null;
 
     CommonUtil.request(CommonUtil.ShoppingCartURL, CommonUtil.GET)
         .done((response) => {
@@ -119,13 +121,26 @@ function renderCheckout() {
         cardBody.append(
             orderTextElement("p", "alert alert-success mt-3 mb-0", "Your order has been confirmed.")
         );
-        $("#checkout-confirmation").removeClass("d-none").append(
-            $("<button>", {
+        const confirmation = $("#checkout-confirmation").removeClass("d-none");
+        if (checkoutOrderId !== null) {
+            confirmation.append($("<button>", {
                 class: "btn btn-success",
                 type: "button",
                 text: "Pay now"
-            }).attr("data-demo-pay", "true")
-        );
+            }).attr({
+                "data-pay-order": checkoutOrderId,
+                "data-checkout-pay": "true"
+            }));
+        } else {
+            confirmation.append(
+                orderTextElement("p", "text-secondary", "You can pay for this order from My Orders."),
+                $("<a>", {
+                    class: "btn btn-outline-success",
+                    href: "/productsOrder",
+                    text: "View My Orders"
+                })
+            );
+        }
     } else {
         cardBody.append(
             $("<button>", {
@@ -148,9 +163,13 @@ $(document).on("click", "[data-confirm-checkout]", function () {
 
     const confirmButton = $(this).prop("disabled", true);
     CommonUtil.request(CommonUtil.ProductsOrderConfirmURL, CommonUtil.GET)
-        .done(() => {
+        .done((order) => {
             checkoutConfirmed = true;
+            checkoutOrderId = order?.id ?? order?.products_order_id ?? null;
             renderCheckout();
+            if (checkoutOrderId === null) {
+                showOrderMessage("Your order was confirmed, but its ID was not returned. You can pay for it from My Orders.");
+            }
         })
         .fail((xhr) => {
             confirmButton.prop("disabled", false);
