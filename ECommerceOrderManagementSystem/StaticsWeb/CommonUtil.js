@@ -13,7 +13,7 @@
         ShoppingCartItems: "/shoppingCart/items",
         ProductsOrderURL: "/order",
         ProductsOrderConfirmURL: "/order/confirm",
-        ProductsOrderPaymentURL: "/productsOrderPayment/pay",
+        ProductsOrderPaymentURL: "/order/payment",
         UsersLogin: "/users/login",
         UsersManagementListUsersURL: "/management/users/listUsers",
         UsersManagementActiveUserURL: "/management/users/active",
