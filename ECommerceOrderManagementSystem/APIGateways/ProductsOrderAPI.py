@@ -18,11 +18,11 @@ async def confirmOrder(user: UsersModel = Depends(getCurrentUser)):
     try:
         return productsOrderService.confirmOrderByUserShoppingCart(user.id)
     except ValueError as error:
-        raise ErrorResponseException(status_code=400, detail=str(error)) from error
+        raise ErrorResponseException(status=400, detail=str(error)) from error
 
 @app.get("/order/payment")
 async def orderPayment(orderId: str, user: UsersModel = Depends(getCurrentUser)):
     try:
         return productsOrderPaymentService.orderPayment(orderId, user.id)
     except ValueError as error:
-        raise ErrorResponseException(status_code=400, detail=str(error)) from error
+        raise ErrorResponseException(status=400, detail=str(error)) from error
