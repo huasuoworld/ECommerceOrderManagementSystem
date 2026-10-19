@@ -6,7 +6,7 @@ from ..CommonUtils.ConstantUtil import AdminPermission, SellerPermission, AdminP
 
 class PermissionValidationService:
     def __init__(self):
-            self.usersPermissionRulesDB = UsersPermissionRulesDB()
+        self.usersPermissionRulesDB = UsersPermissionRulesDB()
 
     def hasPermission(self, usersId: int, subjectPath: str) -> bool:
         if subjectPath == None:

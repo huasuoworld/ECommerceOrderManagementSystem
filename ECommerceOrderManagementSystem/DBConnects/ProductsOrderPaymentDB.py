@@ -1,7 +1,9 @@
-from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import Session
 from .NewBaseDB import NewBaseDB
 from ..Models import ProductsOrderPaymentModel
 from .SQLiteDB import getDB
+from ..CommonUtils.ConstantUtil import DBExcludeColumnsWithoutId
 
 class ProductsOrderPaymentDB(NewBaseDB):
     __tablename__ = 'products_order_payment'
@@ -16,14 +18,13 @@ class ProductsOrderPaymentDB(NewBaseDB):
     payment_status = Column(String)
 
     #create productsOrderItems into database
-    def createProductsOrderPayment(productsOrderPaymentModel: ProductsOrderPaymentModel):
-        with getDB as db:
-            productsOrderPaymentDBData = ProductsOrderPaymentDB(**productsOrderPaymentModel)
-            db.add(productsOrderPaymentDBData)
-            db.commit()
+    def createProductsOrderPaymentWithSession(db: Session, productsOrderPaymentModel: ProductsOrderPaymentModel):
+        productsOrderPayment = productsOrderPaymentModel.model_dump(exclude = DBExcludeColumnsWithoutId)
+        productsOrderPaymentDBData = ProductsOrderPaymentDB(**productsOrderPayment)
+        db.add(productsOrderPaymentDBData)
+        db.commit()
         return ProductsOrderPaymentModel.model_validate(productsOrderPaymentDBData)
 
-    def getProductsOrderPaymentById(productsOrderPaymentId: int):
-        with getDB as db:
-            productsOrderPaymentDBData = db.query(ProductsOrderPaymentDB).filter(ProductsOrderPaymentDB.id == productsOrderPaymentId).first()
+    def getProductsOrderPaymentByIdWithSession(db: Session, productsOrderPaymentId: int):
+        productsOrderPaymentDBData = db.query(ProductsOrderPaymentDB).filter(ProductsOrderPaymentDB.id == productsOrderPaymentId).first()
         return ProductsOrderPaymentModel.model_validate(productsOrderPaymentDBData)

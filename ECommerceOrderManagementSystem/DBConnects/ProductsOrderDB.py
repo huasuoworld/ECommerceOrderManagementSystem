@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from .NewBaseDB import NewBaseDB
 from ..Models.ProductsOrderModel import ProductsOrderModel
 from .SQLiteDB import getDB
-from ..CommonUtils.ConstantUtil import DBExcludeColumns, getCurrentTime
+from ..CommonUtils.ConstantUtil import DBExcludeColumnsWithoutId, getCurrentTime
 
 class ProductsOrderDB(NewBaseDB):
     __tablename__ = 'products_order'
@@ -17,18 +17,12 @@ class ProductsOrderDB(NewBaseDB):
     order_status = Column(String)
     payment_status = Column(String)
 
-    def createProductsOrder(
-        self,
-        db: Session,
-        productsOrderModel: ProductsOrderModel,
-    ) -> "ProductsOrderDB":
-        productsOrderData = productsOrderModel.model_dump(
-            exclude=DBExcludeColumns | {"seller_id"}
-        )
+    def createProductsOrder(self, db: Session, productsOrderModel: ProductsOrderModel) -> "ProductsOrderDB":
+        productsOrderData = productsOrderModel.model_dump(exclude = DBExcludeColumnsWithoutId)
         timestamp = getCurrentTime()
-        productsOrderData["created_at"] = timestamp
-        productsOrderData["updated_at"] = timestamp
         productsOrderDBData = ProductsOrderDB(**productsOrderData)
+        productsOrderDBData.created_at = timestamp
+        productsOrderDBData.updated_at = timestamp
         db.add(productsOrderDBData)
         db.flush()
         return productsOrderDBData
@@ -37,3 +31,26 @@ class ProductsOrderDB(NewBaseDB):
         with getDB() as db:
             return db.query(ProductsOrderDB).filter(
                 ProductsOrderDB.users_id == userId).order_by(ProductsOrderDB.id.desc()).all()
+
+    def getOrderById(self, orderId: int):
+        with getDB() as db:
+            order = db.query(ProductsOrderDB).filter(ProductsOrderDB.id == orderId).first()
+        return order
+
+    def getOrderByIdAndUserIdWithSession(self, db: Session, orderId: int, userId: int):
+        return db.query(ProductsOrderDB).filter(ProductsOrderDB.id == orderId, ProductsOrderDB.users_id == userId).first()
+
+    def updateOrderById(self, orderId: int, orderStatus: str, paymentStatus: str):
+        with getDB() as db:
+            order = db.query(ProductsOrderDB).filter(ProductsOrderDB.id == orderId).first()
+            order.updated_at = getCurrentTime()
+            order.order_status = orderStatus
+            order.payment_status = paymentStatus
+        return order
+
+    def updateOrderByIdWithSession(self, db: Session, orderId: int, orderStatus: str, paymentStatus: str):
+        order = db.query(ProductsOrderDB).filter(ProductsOrderDB.id == orderId).first()
+        order.updated_at = getCurrentTime()
+        order.order_status = orderStatus
+        order.payment_status = paymentStatus
+        return order
