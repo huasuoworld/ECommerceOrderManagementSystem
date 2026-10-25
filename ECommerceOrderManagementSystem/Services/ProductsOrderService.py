@@ -1,3 +1,4 @@
+from ..CommonUtils.LoggingUtil import logger
 from ..DBConnects.SQLiteDB import getDB
 from ..DBConnects.ProductsOrderDB import ProductsOrderDB
 from ..DBConnects.ProductsShoppingCartDB import ProductsShoppingCartDB
@@ -22,21 +23,24 @@ class ProductsOrderService:
                 raise ValueError("Your shopping cart is empty.")
 
             orderNumber = str(getOrderNumber())
+            currentTime = getCurrentTime()
 
             #2.1 Build productsOrderModel
             orderModel = ProductsOrderModel(
                 users_id = userId,
                 order_number = orderNumber,
-                # order_amount = sum(orderAmountList),
-                # order_discount_price = sum(orderDiscountPriceList),
-                # order_product_price = sum(orderProductPriceList),
+                order_amount = 0,
+                order_discount_price = 0,
+                order_product_price = 0,
                 order_freight_price = 0,
                 order_status = OrderStatusUnpaid,
-                payment_status = PaymentStatusUnpaid
+                payment_status = PaymentStatusUnpaid,
+                created_at = currentTime,
+                updated_at = currentTime
             )
             #2.1 save productsOrder info, and get productsOrderId
             order = self.productsOrderDB.createProductsOrder(db, orderModel)
-
+            logger.info("orderID [%s]", order.id)
             #3. collect the product ids; calculate the product price,discount price and amount
             #3. Build productsOrderItemsModel and lock inventory stock
             productsIDs = []
@@ -53,7 +57,7 @@ class ProductsOrderService:
                 orderDiscountPriceList.append(item.discount_price * item.products_quantity)
                 #3.4 calculate the amount
                 orderAmountList.append(max(0, item.product_price - item.discount_price) * item.products_quantity)
-                currentTime = getCurrentTime()
+                
                 #3.5 Build productsOrderItemsModel
                 productsOrderItemsModel = ProductsOrderItemsModel(
                     products_order_id = order.id,
@@ -74,16 +78,21 @@ class ProductsOrderService:
                 #3.6 lock inventory stock
                 self.productsInventoryDB.lockStockWithSession(db, item.product_id, item.products_quantity)
             #4. after calculate the price then update the order's amount,discount_price and product_price
-            order.order_amount = sum(orderAmountList),
-            order.order_discount_price = sum(orderDiscountPriceList),
-            order.order_product_price = sum(orderProductPriceList),
+            order_amount = sum(orderAmountList)
+            order_discount_price = sum(orderDiscountPriceList)
+            order_product_price = sum(orderProductPriceList)
+            logger.info("order_amount %s[%s] ; order_discount_price %s[%s] ; order_product_price %s[%s]", order_amount, type(order_amount), order_discount_price, type(order_discount_price), order_product_price, type(order_product_price))
+            order.order_amount = order_amount
+            order.order_discount_price = order_discount_price
+            order.order_product_price = order_product_price
             #5. save productsOrderItems
             productsOrderItems = self.productsOrderItemsDB.createProductsOrderItems(db, orderItems)
             #6. delete ProductsShoppingCart from db
             self.productsShoppingCartDB.delProductsShoppingCartByUserIdWithSession(db, userId)
             db.commit()
-            db.refresh(order)
-            return order
+            productsOrder = ProductsOrderModel.model_validate(order)
+            logger.info("productsOrder %s", productsOrder)
+            return productsOrder
 
     def getOrderByUserId(self, userId: int):
         return self.productsOrderDB.getOrderByUserId(userId)

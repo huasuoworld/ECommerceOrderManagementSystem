@@ -4,6 +4,7 @@ from ..DBConnects.ProductsOrderItemsDB import ProductsOrderItemsDB
 from ..DBConnects.ProductsOrderPaymentDB import ProductsOrderPaymentDB
 from ..DBConnects.SQLiteDB import getDB
 from ..CommonUtils.ConstantUtil import getCurrentTime, getPaymentNumber, PaymentStatusPaid, OrderStatusPaid
+from ..CommonUtils.LoggingUtil import logger
 from ..Models.ProductsOrderPaymentModel import ProductsOrderPaymentModel
 
 class ProductsOrderPaymentService:
@@ -21,6 +22,7 @@ class ProductsOrderPaymentService:
             #2. get order item information
             orderItems = self.productsOrderItemsDB.getProductsOrderItemsWithSession(db, order.id, userId)
             currentTime = getCurrentTime()
+            paymentNumber = getPaymentNumber()
             for orderItem in orderItems:
                 #3. update inventory
                 self.productsInventoryDB.releaseReservedStockWithSession(db, orderItem.products_id, orderItem.item_quantity)
@@ -31,15 +33,18 @@ class ProductsOrderPaymentService:
             productsOrderPaymentModel = ProductsOrderPaymentModel(
                 products_order_id = order.id,
                 users_id = order.users_id,
-                payment_number = getPaymentNumber(),
+                payment_number = paymentNumber,
                 payment_channel = "CIBC",
                 payment_type = "ONLINE",
                 payment_amount = order.order_amount,
                 payment_order_number = order.order_number,
-                payment_status = PaymentStatusPaid)
+                payment_status = PaymentStatusPaid,
+                created_at = currentTime,
+                updated_at = currentTime)
             self.productsOrderPaymentDB.createProductsOrderPaymentWithSession(db, productsOrderPaymentModel)
             #6. update order status
             order.order_status = OrderStatusPaid
+            order.payment_status = PaymentStatusPaid
             order.updated_at = currentTime
             #7. commit data
             db.commit()

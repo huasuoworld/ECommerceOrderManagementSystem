@@ -1,6 +1,6 @@
-from .UsersBaseModel import UsersBaseModel
+from ..Models.NewBaseModel import NewBaseModel
 
-class ProductsOrderPaymentModel(UsersBaseModel):
+class ProductsOrderPaymentModel(NewBaseModel):
     products_order_id: int
     users_id: int
     payment_number: str

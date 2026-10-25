@@ -1,5 +1,7 @@
+import json
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import Session
+from ..CommonUtils.LoggingUtil import logger
 from .UsersBaseDB import UsersBaseDB
 from ..Models.ProductsOrderItemsModel import ProductsOrderItemsModel
 from typing import List
@@ -25,13 +27,14 @@ class ProductsOrderItemsDB(UsersBaseDB):
     def createProductsOrderItems(self, db: Session, productsOrderItemsModelList: List[ProductsOrderItemsModel],
     ) -> List["ProductsOrderItemsDB"]:
         productsOrderItemsDBDataList = []
+        timestamp = getCurrentTime()
         for productsOrderItemsModel in productsOrderItemsModelList:
             productsOrderItemData = productsOrderItemsModel.model_dump(exclude = DBExcludeColumnsWithoutId)
-            timestamp = getCurrentTime()
             productsOrderItem = ProductsOrderItemsDB(**productsOrderItemData)
             productsOrderItem.created_at = timestamp
             productsOrderItem.updated_at = timestamp
             productsOrderItemsDBDataList.append(productsOrderItem)
+            logger.info("productsOrderItem %s", productsOrderItemData)    
         db.add_all(productsOrderItemsDBDataList)
         db.flush()
         return productsOrderItemsDBDataList

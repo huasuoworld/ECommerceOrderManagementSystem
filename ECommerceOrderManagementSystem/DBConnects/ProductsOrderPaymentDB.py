@@ -1,9 +1,10 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import Session
 from .NewBaseDB import NewBaseDB
-from ..Models import ProductsOrderPaymentModel
+from ..Models.ProductsOrderPaymentModel import ProductsOrderPaymentModel
 from .SQLiteDB import getDB
 from ..CommonUtils.ConstantUtil import DBExcludeColumnsWithoutId
+from ..CommonUtils.LoggingUtil import logger
 
 class ProductsOrderPaymentDB(NewBaseDB):
     __tablename__ = 'products_order_payment'
@@ -18,7 +19,8 @@ class ProductsOrderPaymentDB(NewBaseDB):
     payment_status = Column(String)
 
     #create productsOrderItems into database
-    def createProductsOrderPaymentWithSession(db: Session, productsOrderPaymentModel: ProductsOrderPaymentModel):
+    def createProductsOrderPaymentWithSession(self, db: Session, productsOrderPaymentModel: ProductsOrderPaymentModel):
+        logger.info("productsOrderPaymentModel %s", productsOrderPaymentModel)
         productsOrderPayment = productsOrderPaymentModel.model_dump(exclude = DBExcludeColumnsWithoutId)
         productsOrderPaymentDBData = ProductsOrderPaymentDB(**productsOrderPayment)
         db.add(productsOrderPaymentDBData)

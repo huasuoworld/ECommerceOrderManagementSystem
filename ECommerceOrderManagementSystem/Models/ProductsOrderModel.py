@@ -3,9 +3,9 @@ from typing import Optional
 from .UsersBaseModel import UsersBaseModel
 
 class ProductsOrderModel(UsersBaseModel):
-    id: Optional[int] = None
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    # id: Optional[int] = None
+    # created_at: Optional[str] = None
+    # updated_at: Optional[str] = None
     users_id: int
     order_number: str
     order_amount: int

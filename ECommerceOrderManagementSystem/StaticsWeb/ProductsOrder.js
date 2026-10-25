@@ -227,7 +227,6 @@ function renderOrders(orders) {
             orderTextElement("div", "order-total fw-bold", orderFormatPrice(order.order_amount))
         );
         cardBody.append(header, totals);
-
         if (orderId !== undefined && orderId !== null && !isOrderPaid(paymentStatus)) {
             cardBody.append(
                 $("<button>", {
@@ -244,7 +243,7 @@ function renderOrders(orders) {
 }
 
 function isOrderPaid(paymentStatus) {
-    return ["paid", "success", "succeeded", "completed", "1"].includes(
+    return ["Paying", "Paid"].includes(
         String(paymentStatus).trim().toLowerCase()
     );
 }
