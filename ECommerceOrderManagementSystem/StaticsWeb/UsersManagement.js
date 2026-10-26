@@ -162,8 +162,140 @@ function makeUsersPageButton(label, page, disabled, active = false) {
     }).append($button);
 }
 
+
+// Notification pagination state
+let currentMsgPage = 1;
+let msgPageSize = 5; // Number of notifications per page
+let totalMsgPages = 1;
+
+/**
+ * Initialize the notification system.
+ */
+function initNotificationSystem() {
+    // Load the first page when the dropdown opens.
+    const dropdownEl = document.getElementById('messagesDropdown');
+    if (dropdownEl) {
+        dropdownEl.addEventListener('show.bs.dropdown', function () {
+            loadNotificationMessages(1);
+        });
+    }
+
+    // Bind pagination controls.
+    document.getElementById('prevMsgPage')?.addEventListener('click', function (e) {
+        e.stopPropagation(); // Keep the dropdown open.
+        if (currentMsgPage > 1) {
+            loadNotificationMessages(currentMsgPage - 1);
+        }
+    });
+
+    document.getElementById('nextMsgPage')?.addEventListener('click', function (e) {
+        e.stopPropagation(); // Keep the dropdown open.
+        if (currentMsgPage < totalMsgPages) {
+            loadNotificationMessages(currentMsgPage + 1);
+        }
+    });
+}
+
+/**
+ * Fetch and render a page of notifications.
+ * @param {number} pageNumber
+ */
+function loadNotificationMessages(pageNumber) {
+    const url = `/notification/getMessages?page_number=${pageNumber}&page_size=${msgPageSize}`;
+    const container = document.getElementById('notificationListContainer');
+    if (container) {
+        container.innerHTML = '<li><span class="dropdown-item text-muted text-center py-2">Loading notifications...</span></li>';
+    }
+
+    CommonUtil.request(url, CommonUtil.POST)
+    .done((res) => {
+        if (res.status === CommonUtil.SuccessStatusCode && Array.isArray(res.items)) {
+            currentMsgPage = Number(res.page_number) || pageNumber;
+            totalMsgPages = Number(res.total_pages) || 0;
+            renderNotificationList(res.items);
+            updateMsgPaginationUI(currentMsgPage);
+        } else {
+            console.error("Failed to load notifications:", res.message);
+            renderNotificationError(res.message || "Unable to load notifications.");
+        }
+    }).fail((xhr) => {
+        const message = xhr.responseJSON?.message || "Unable to load notifications. Please try again later.";
+        console.error("Failed to load notifications:", message);
+        renderNotificationError(message);
+    });
+}
+
+function renderNotificationError(message) {
+    const container = document.getElementById('notificationListContainer');
+    if (!container) return;
+
+    const item = document.createElement('li');
+    const text = document.createElement('span');
+    text.className = 'dropdown-item text-danger text-center py-2';
+    text.textContent = message;
+    item.appendChild(text);
+    container.replaceChildren(item);
+}
+
+/**
+ * Render the notification dropdown list.
+ * NotificationMessagesModel fields: message_code, message, message_type, message_status
+ */
+function renderNotificationList(list) {
+    const container = document.getElementById('notificationListContainer');
+    if (!container) return;
+
+    if (!list || list.length === 0) {
+        container.innerHTML = '<li><span class="dropdown-item text-muted text-center py-2">No notifications</span></li>';
+        return;
+    }
+
+    const fragment = document.createDocumentFragment();
+    list.forEach(item => {
+        const unreadClass = item.message_status ? '' : 'bg-light fw-bold';
+        const listItem = document.createElement('li');
+        const messageItem = document.createElement('div');
+        messageItem.className = `dropdown-item-text py-2 border-bottom ${unreadClass}`;
+
+        const badges = document.createElement('div');
+        badges.className = 'd-flex justify-content-between align-items-center mb-1';
+        const typeBadge = document.createElement('span');
+        typeBadge.className = 'badge bg-info text-dark';
+        typeBadge.textContent = item.message_type || 'Notification';
+        const statusBadge = document.createElement('span');
+        statusBadge.className = `badge ${item.message_status ? 'bg-secondary' : 'bg-primary'}`;
+        statusBadge.textContent = item.message_status ? 'Read' : 'Unread';
+        badges.append(typeBadge, statusBadge);
+
+        const messageText = document.createElement('p');
+        messageText.className = 'mb-0 text-truncate';
+        messageText.style.maxWidth = '280px';
+        messageText.title = item.message || '';
+        messageText.textContent = item.message || '';
+        messageItem.append(badges, messageText);
+        listItem.appendChild(messageItem);
+        fragment.appendChild(listItem);
+    });
+    container.replaceChildren(fragment);
+}
+
+/**
+ * Update the pagination controls.
+ */
+function updateMsgPaginationUI(pageNumber) {
+    document.getElementById('msgPageInfo').innerText = `Page ${pageNumber} of ${totalMsgPages || 1}`;
+    
+    const prevBtn = document.getElementById('prevMsgPage');
+    const nextBtn = document.getElementById('nextMsgPage');
+
+    if (prevBtn) prevBtn.disabled = (pageNumber <= 1);
+    
+    if (nextBtn) nextBtn.disabled = pageNumber >= totalMsgPages;
+}
+
 $(function () {
     loadUsers();
+    initNotificationSystem();
     $("#refresh-users").on("click", loadUsers);
     $("#users-list").on("click", "[data-user-status]", function () {
         updateUserStatus(

@@ -6,6 +6,7 @@ from ..DBConnects.SQLiteDB import getDB
 from ..CommonUtils.ConstantUtil import getCurrentTime, getPaymentNumber, PaymentStatusPaid, OrderStatusPaid
 from ..CommonUtils.LoggingUtil import logger
 from ..Models.ProductsOrderPaymentModel import ProductsOrderPaymentModel
+from ..Services.NotificationMessagesService import NotificationMessagesService
 
 class ProductsOrderPaymentService:
     def __init__(self):
@@ -13,6 +14,7 @@ class ProductsOrderPaymentService:
         self.productsInventoryDB = ProductsInventoryDB()
         self.productsOrderItemsDB = ProductsOrderItemsDB()
         self.productsOrderPaymentDB = ProductsOrderPaymentDB()
+        self.notificationMessagesService = NotificationMessagesService()
 
     #get a product by its ID
     def orderPayment(self, orderId: int, userId: int):
@@ -46,5 +48,11 @@ class ProductsOrderPaymentService:
             order.order_status = OrderStatusPaid
             order.payment_status = PaymentStatusPaid
             order.updated_at = currentTime
+            try:
+                #add a notification message for order payment
+                self.notificationMessagesService.addNotificationMessagesWithSession(db,f"Order {order.order_number} has been paid successfully.")
+            except Exception as e:
+                logger.error(f"Failed to add notification message for order payment: {e}")
             #7. commit data
             db.commit()
+           

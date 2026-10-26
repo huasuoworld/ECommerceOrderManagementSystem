@@ -1,9 +1,9 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
 from typing import List
 from .SQLiteDB import getDB
 from .NewBaseDB import NewBaseDB
 from ..Models.UsersPermissionRulesModel import UsersPermissionRulesModel
-from ..CommonUtils.ConstantUtil import UserStatusActive, getCurrentTime
+from ..CommonUtils.ConstantUtil import UserStatusActive, getCurrentTime, AdminPermission
 
 class UsersPermissionRulesDB(NewBaseDB):
     __tablename__ = 'users_permission_rules'
@@ -13,6 +13,7 @@ class UsersPermissionRulesDB(NewBaseDB):
     permission_resource_path = Column(String)
     permission_action = Column(String)
     permission_status = Column(String)
+    subscription_type = Column(Boolean)
 
     def hasPermission(self, usersId: int, subjectPath: str) -> List[UsersPermissionRulesModel]:
         with getDB() as db:
@@ -25,6 +26,18 @@ class UsersPermissionRulesDB(NewBaseDB):
                 UsersPermissionRulesModel.model_validate(rule)
                 for rule in usersPermissionRules
             ]
+
+    def isAdminAndSubscribed(self, usersId: int) -> UsersPermissionRulesModel:
+        with getDB() as db:
+            usersPermissionRuleDBData = db.query(UsersPermissionRulesDB).filter(
+                UsersPermissionRulesDB.users_id == usersId,
+                UsersPermissionRulesDB.permission_subject_path == AdminPermission,
+                UsersPermissionRulesDB.permission_status == UserStatusActive,
+                UsersPermissionRulesDB.subscription_type == True
+            ).first()
+            if usersPermissionRuleDBData is None:
+                return None
+            return UsersPermissionRulesModel.model_validate(usersPermissionRuleDBData)
 
     def getPermissionByUserId(self, usersId: int) -> List[UsersPermissionRulesModel]:
         with getDB() as db:

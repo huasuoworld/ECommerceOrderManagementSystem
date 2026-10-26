@@ -243,7 +243,7 @@ function renderOrders(orders) {
 }
 
 function isOrderPaid(paymentStatus) {
-    return ["Paying", "Paid"].includes(
+    return ["paying", "paid"].includes(
         String(paymentStatus).trim().toLowerCase()
     );
 }

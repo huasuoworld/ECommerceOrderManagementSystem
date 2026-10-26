@@ -28,9 +28,9 @@ ErrorMessage = "Error"
 
 UserSessionID = "userSessionID"
 
-PathWhiteList = ["/", "/login", "/users/login", "/docs", "/openapi.json"]
+PathWhiteList = ["/", "/login", "/users/login", "/docs", "/openapi.json", "/favicon.ico", "/.well-known/appspecific/com.chrome.devtools.json"]
 BuyerPathWhiteList = ["/products", "/products/listProducts", "/order", "/order/confirm", "/order/payment", "/shoppingCart", "/shoppingCart/items", "/shoppingCart/items", "/users/me"]
-AdminPathWhiteList = BuyerPathWhiteList + ["/management/users/listUsers", "/usersManagement", "/management/users/active", "/management/users/inactive"]
+AdminPathWhiteList = BuyerPathWhiteList + ["/management/users/listUsers", "/usersManagement", "/management/users/active", "/management/users/inactive", "/notification/getMessages"]
 SellerPathWhiteList = BuyerPathWhiteList + ["/products/listProductsBySellerId", "/productsManagement", "/products/listProductsBySellerId", "/productsOrder"]
 
 AdminHomePageURL = "/usersManagement"
@@ -44,6 +44,8 @@ SessionId = "sessionId"
 
 OrderPrefix = "ORD-"
 PaymentPrefix = "PAY-"
+
+OrderPaidMessageCode = "ORDER-PAID"
 
 PaymentStatusUnpaid = "Unpaid"
 PaymentStatusPaying = "Paying"

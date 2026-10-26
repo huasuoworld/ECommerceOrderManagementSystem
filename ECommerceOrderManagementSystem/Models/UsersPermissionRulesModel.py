@@ -7,6 +7,7 @@ class UsersPermissionRulesModel(NewBaseModel):
     permission_resource_path: str
     permission_action: str
     permission_status: str
+    subscription_type: bool
 
     class Config:
         from_attributes = True
