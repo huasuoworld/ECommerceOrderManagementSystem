@@ -29,6 +29,7 @@ class PermissionValidationService:
 
     def hasPermission(self, requestPath: str, permission: UsersPermissionRulesModel):
         if AdminPermission == permission.permission_subject_path:
+            #admin user: check request path is in the admin whitelist or get homepage httpurl
             if requestPath is not None:
                 matchRequestPath = [requestPath == adminPathWhite or requestPath.startswith(adminPathWhite) for adminPathWhite in AdminPathWhiteList]
                 logger.info("matchRequestPath: %s, any: %s", matchRequestPath, any(matchRequestPath))
@@ -40,6 +41,7 @@ class PermissionValidationService:
                 else:
                     return AdminHomePageURL
         elif SellerPermission == permission.permission_subject_path:
+            #seller user: check request path is in the seller whitelist or get homepage httpurl
             if requestPath is not None:
                 matchRequestPath = [requestPath == sellerPathWhite or requestPath.startswith(sellerPathWhite) for sellerPathWhite in SellerPathWhiteList]
                 logger.info("matchRequestPath: %s, any: %s", matchRequestPath, any(matchRequestPath))
@@ -51,6 +53,7 @@ class PermissionValidationService:
                 else:
                     return SellerHomePageURL
         else:
+            #buyer user: check request path is in the buyer whitelist or get homepage httpurl
             if requestPath is not None:
                 logger.info("buyerPathWhite: %s", requestPath)
                 matchRequestPath = [requestPath == buyerPathWhite or requestPath.startswith(buyerPathWhite) for buyerPathWhite in BuyerPathWhiteList]
