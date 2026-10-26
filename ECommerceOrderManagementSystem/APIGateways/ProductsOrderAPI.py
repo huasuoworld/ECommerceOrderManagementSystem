@@ -11,7 +11,10 @@ productsOrderPaymentService = ProductsOrderPaymentService()
 
 @app.get("/order")
 async def getOrder(user: UsersModel = Depends(getCurrentUser)):
-    return productsOrderService.getOrderByUserId(user.id)
+    try:
+        return productsOrderService.getOrderByUserId(user.id)
+    except ValueError as error:
+        raise ErrorResponseException(status=400, message=str(error)) from error
 
 @app.get("/order/confirm")
 async def confirmOrder(user: UsersModel = Depends(getCurrentUser)):
@@ -22,7 +25,7 @@ async def confirmOrder(user: UsersModel = Depends(getCurrentUser)):
 
 @app.get("/order/payment")
 async def orderPayment(orderId: str, user: UsersModel = Depends(getCurrentUser)):
-    # try:
+    try:
         return productsOrderPaymentService.orderPayment(orderId, user.id)
-    # except ValueError as error:
-        # raise ErrorResponseException(status=400, message=str(error)) from error
+    except ValueError as error:
+        raise ErrorResponseException(status=400, message=str(error)) from error

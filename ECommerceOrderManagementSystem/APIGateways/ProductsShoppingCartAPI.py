@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 from ..Services.ShoppingCartService import ShoppingCartService
 from .APIGatewayDefine import app, getCurrentUser
 from ..Models.UsersModel import UsersModel
-from ..Models.FrontEndReponseModel import ErrorResponseModel
+from ..Models.FrontEndReponseModel import ErrorResponseModel, ErrorResponseException
 
 shoppingCartService = ShoppingCartService()
 
@@ -19,7 +19,10 @@ class UpdateCartItemRequest(BaseModel):
 
 @app.get("/shoppingCart")
 async def getShoppingCart(user: UsersModel = Depends(getCurrentUser)):
-    return shoppingCartService.getCart(user.id)
+    try:
+        return shoppingCartService.getCart(user.id)
+    except ValueError as error:
+            raise ErrorResponseException(status=400, message=str(error)) from error
 
 
 @app.post("/shoppingCart/items")

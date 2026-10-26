@@ -16,16 +16,19 @@ usersService = UsersService()
 # Define the login endpoint
 @app.post("/users/login")
 async def login(userModel: UsersModel):
-    LoggingUtil.logger.info("Login request received")
-    responseModel = userLoginService.login(userModel)
-    
-    if responseModel == None:
-        raise ErrorResponseException(status = DoNotHavePermissionErrorCode, message = DoNotHavePermissionErrorMessage)
-    else:
-        return SuccessResponseModel(
-            session_id=responseModel[SessionId],
-            http_url=responseModel.get(HttpUrl),
-        )
+    try:
+        LoggingUtil.logger.info("Login request received")
+        responseModel = userLoginService.login(userModel)
+        
+        if responseModel == None:
+            raise ErrorResponseException(status = DoNotHavePermissionErrorCode, message = DoNotHavePermissionErrorMessage)
+        else:
+            return SuccessResponseModel(
+                session_id=responseModel[SessionId],
+                http_url=responseModel.get(HttpUrl),
+            )
+    except ValueError as error:
+        raise ErrorResponseException(status=400, message=str(error)) from error
 
 
 @app.get("/users/me", response_model=UserProfileModel)
