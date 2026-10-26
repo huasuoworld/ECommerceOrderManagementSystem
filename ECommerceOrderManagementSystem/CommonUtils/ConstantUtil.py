@@ -28,7 +28,7 @@ ErrorMessage = "Error"
 
 UserSessionID = "userSessionID"
 
-PathWhiteList = ["/", "/login", "/users/login"]
+PathWhiteList = ["/", "/login", "/users/login", "/docs", "/openapi.json"]
 BuyerPathWhiteList = ["/products", "/products/listProducts", "/order", "/order/confirm", "/order/payment", "/shoppingCart", "/shoppingCart/items", "/shoppingCart/items", "/users/me"]
 AdminPathWhiteList = BuyerPathWhiteList + ["/management/users/listUsers", "/usersManagement", "/management/users/active", "/management/users/inactive"]
 SellerPathWhiteList = BuyerPathWhiteList + ["/products/listProductsBySellerId", "/productsManagement", "/products/listProductsBySellerId", "/productsOrder"]
